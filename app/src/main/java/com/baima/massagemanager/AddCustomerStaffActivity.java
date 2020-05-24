@@ -3,6 +3,7 @@ package com.baima.massagemanager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,8 +11,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.util.PersonUtil;
+
+import org.litepal.LitePal;
+
+import java.util.List;
 
 public class AddCustomerStaffActivity extends AppCompatActivity {
 
@@ -102,22 +108,30 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
 
             if (type==ADD_CUSTOMER) {
                 Double rechargeAmount = Double.valueOf(ed_recharge_amount.getText().toString().trim());
-                Double remainder = Double.valueOf(ed_remainder.getText().toString().trim());
-
+                Double rechargeHour = Double.valueOf(ed_remainder.getText().toString().trim());
+//保存顾客
                 Customer customer = new Customer();
                 customer.setNumber(number);
                 customer.setName(name);
                 customer.setPhoneNumber(phoneNumber);
-                customer.setRemainder(remainder);
+                customer.setRemainder(rechargeHour);
                 customer.setRemark(remark);
                 isSaved = customer.save();
-            } else {
+
+                //保存充值记录
+                long customerIdd = customer.getId();
+                long timeStamp = System.currentTimeMillis();
+                remark="";
+                RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeStamp, rechargeAmount, rechargeHour, rechargeHour, remark);
+                isSaved=rechargeRecord.save();
+
+                } else {
             }
 
             if (isSaved){
             //如果 保存成功
-            setResult(RESULT_OK);
                 Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
             finish();
             }else{
                 Toast.makeText(this, "保存失败，请检查 后重试！", Toast.LENGTH_SHORT).show();

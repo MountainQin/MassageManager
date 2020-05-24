@@ -17,7 +17,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddCustomerStaffActivity"></activity>
+        <activity android:name=".AddCustomerStaffActivity" />
+        <activity android:name=".CustomerMessageActivity" />
+        <activity android:name=".RechargeActivity"></activity>
     </application>
 
 </manifest>

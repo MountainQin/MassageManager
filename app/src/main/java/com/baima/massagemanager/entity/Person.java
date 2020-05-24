@@ -3,17 +3,17 @@ package com.baima.massagemanager.entity;
 import org.litepal.crud.LitePalSupport;
 
 public abstract  class Person extends LitePalSupport {
-    private int id;
+    private long id;
     private int number; //编号
         private String name;
     private String phoneNumber;
     private String remark; //备注
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -7,7 +7,10 @@ import android.os.Bundle;
 
 import com.baima.massagemanager.fragment.CustomerFragment;
 import com.baima.massagemanager.fragment.StaffFragment;
+import com.baima.massagemanager.util.StringUtil;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 

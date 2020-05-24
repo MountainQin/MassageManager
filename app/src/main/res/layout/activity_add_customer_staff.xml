@@ -59,13 +59,13 @@ android:id="@+id/layout_customer"
         android:layout_height="wrap_content" />
 
         <TextView
-            android:text="剩余次数"
+            android:text="充值小时数"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     <EditText
         android:id="@+id/ed_remainder"
         android:inputType="number|numberDecimal"
-        android:hint="请输入剩余次数"
+        android:hint="请输入充值小时数"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     </LinearLayout>

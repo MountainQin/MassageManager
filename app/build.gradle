@@ -27,5 +27,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     //LitePal数据 库
     implementation 'org.litepal.android:java:3.0.0'
+//design界面设计
+    implementation 'com.android.support:design:27.1.0'
+//RecyclerView列表框
+    implementation 'com.android.support:recyclerview-v7:24.2.1'
 
 }

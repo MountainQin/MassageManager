@@ -9,10 +9,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baima.massagemanager.entity.Customer;
+import com.baima.massagemanager.util.StringUtil;
 
 import java.util.List;
 
-public class CustomerAdapter extends BaseAdapter {
+public abstract class CustomerAdapter extends BaseAdapter {
 
     private Context context;
     private List<Customer> customerList;
@@ -21,6 +22,12 @@ public class CustomerAdapter extends BaseAdapter {
         this.context = context;
         this.customerList = customerList;
     }
+
+    /**
+     * 列表项目里的充值点击 后回调
+     * @param customerId
+     */
+    public abstract void onRechargeClick(long customerId);
 
     @Override
     public int getCount() {
@@ -55,23 +62,21 @@ public class CustomerAdapter extends BaseAdapter {
             holder= (ViewHolder) convertView.getTag();
         }
 
-        Customer customer = customerList.get(position);
-        holder.tv_number.setText(String .valueOf(customer.getNumber()));
+        final Customer customer = customerList.get(position);
+        holder.tv_number.setText(String .valueOf(customer.getNumber())+"号");
         holder.tv_name.setText(customer.getName());
-        //剩余次数的小数部分如果是0就不显示 小数部分
-        double remainder = customer.getRemainder();
-        int i=new Double(remainder).intValue();
-        if (remainder==i) {
-            holder.tv_remainder.setText("剩余：" +i +"小时");
-        } else {
-            holder.tv_remainder.setText("剩余：" +remainder +"小时");
-        }
-        holder.tv_remark.setText(customer.getRemark());
+        holder.tv_remainder.setText("剩余："+
+                StringUtil.doubleTrans(customer.getRemainder()) +"小时");
+         holder.tv_remark.setText(customer.getRemark());
 
+        //充值的点击 事件，打开充值活动界面
 holder.tv_recharge.setOnClickListener(new View.OnClickListener() {
     @Override
     public void onClick(View v) {
-        Toast.makeText(context, "click recharge", Toast.LENGTH_SHORT).show();
+        onRechargeClick(customer.getId());
+//        Fragment +ListView +adapter 项目里的组件 点击后，可以打开新活动，从新活动返回后不能回调onActivityForResult
+        //要利用回调在Fragment打开新活动
+//                ((Activity)context).startActivityForResult(intent, requestCode);
     }
 });
 
