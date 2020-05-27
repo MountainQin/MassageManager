@@ -19,7 +19,7 @@
         </activity>
         <activity android:name=".AddCustomerStaffActivity" />
         <activity android:name=".CustomerMessageActivity" />
-        <activity android:name=".RechargeActivity"></activity>
+        <activity android:name=".RechargeActivity" />
     </application>
 
 </manifest>

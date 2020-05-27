@@ -7,11 +7,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,15 +38,18 @@ public class CustomerFragment extends Fragment {
     private List<Customer> customerList = new ArrayList<>();
     private CustomerAdapter adapter;
     private ListView lv_customer;
+    private TextView tv_clear;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_customer, container, false);
-        TextView tv_search = view.findViewById(R.id.tv_search);
+        final EditText et_search = (EditText) view.findViewById(R.id.et_search);
+        tv_clear = (TextView) view.findViewById(R.id.tv_clear);
         TextView tv_add = view.findViewById(R.id.tv_add);
         lv_customer = view.findViewById(R.id.lv_customer);
 
+        et_search.setHint("请输入关键字，编号 或姓名或手机号");
         adapter = new CustomerAdapter(getActivity(), customerList) {
             @Override
             public void onRechargeClick(long customerId) {
@@ -56,13 +62,63 @@ public class CustomerFragment extends Fragment {
         lv_customer.setAdapter(adapter);
         refreshCustomerList();
 
-        //查找 的点击 事件
-        tv_search.setOnClickListener(new View.OnClickListener() {
+        //查找 编辑框内容变化 事件
+        et_search.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "search customer", Toast.LENGTH_SHORT).show();
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = s.toString().trim();
+                if (text.length() > 0) {
+                    tv_clear.setVisibility(View.VISIBLE);
+                    customerList.clear();
+                    //查找 编号 姓名
+                    customerList.addAll(
+                            LitePal.where("number=? or name like ?", text, "%" + text + "%")
+                                    .order("number").find(Customer.class)
+                    );
+                    if (text.length() > 2) {
+                        //如果 字符 串个数大于2再查找 手机号
+                        customerList.addAll(
+                                LitePal.where("phoneNumber like ?", "%" + text + "%")
+                                        .order("number").find(Customer.class)
+                        );
+                    }
+                    //删除重复的
+                    for (int i = 0; i < customerList.size(); i++) {
+                        for (int j = i + 1; j < customerList.size(); j++) {
+                            if (customerList.get(i).getId() == customerList.get(j).getId()) {
+                                customerList.remove(j);
+                                j--;
+                            }
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                } else {
+                    //如果 查找 编辑框内容为空，显示 所有顾客 ，隐藏清空标签
+                    refreshCustomerList();
+                    tv_clear.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
+
+        //清空标签的点击 事件
+        tv_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                et_search.setText("");
+                tv_clear.setVisibility(View.GONE);
+            }
+        });
+
         //添加的点击 事件
         tv_add.setOnClickListener(new View.OnClickListener() {
             @Override
