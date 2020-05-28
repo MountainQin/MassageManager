@@ -25,25 +25,28 @@
         android:layout_toLeftOf="@+id/tv_recharge"
         android:layout_width="match_parent"
         android:layout_height="20dp">
+
         <TextView
             android:id="@+id/tv_number"
             android:text="number"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
+
         <TextView
             android:id="@+id/tv_name"
             android:text="name"
             android:layout_weight="2"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
+
         <TextView
             android:id="@+id/tv_remainder"
             android:text="remainder"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
-        </LinearLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_remark"

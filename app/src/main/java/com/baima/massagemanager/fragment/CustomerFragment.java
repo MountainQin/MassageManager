@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +16,9 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baima.massagemanager.AddCustomerStaffActivity;
+import com.baima.massagemanager.ConsumeActivity;
 import com.baima.massagemanager.CustomerAdapter;
 import com.baima.massagemanager.CustomerMessageActivity;
 import com.baima.massagemanager.R;
@@ -34,6 +33,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerFragment extends Fragment {
+
+    private static final int ADD = 1;
+    private static final int MESSAGE = 2;
+    private static final int RECHARGE = 3;
+    private static final int CONSUME = 4;
 
     private List<Customer> customerList = new ArrayList<>();
     private CustomerAdapter adapter;
@@ -56,9 +60,18 @@ public class CustomerFragment extends Fragment {
                 //打开充值活动
                 Intent intent = new Intent(getActivity(), RechargeActivity.class);
                 intent.putExtra("customerId", customerId);
-                startActivityForResult(intent, 3);
+                startActivityForResult(intent, RECHARGE);
+            }
+
+            @Override
+            public void onConsumeClick(long customerId) {
+                //打开消费活动
+                Intent intent = new Intent(getActivity(), ConsumeActivity.class);
+                intent.putExtra("customerId", customerId);
+                startActivityForResult(intent, CONSUME);
             }
         };
+
         lv_customer.setAdapter(adapter);
         refreshCustomerList();
 
@@ -128,7 +141,7 @@ public class CustomerFragment extends Fragment {
                 int newNumber = PersonUtil.getNewNumber(Customer.class);
                 intent.putExtra("number", newNumber);
                 intent.putExtra("type", AddCustomerStaffActivity.ADD_CUSTOMER);
-                startActivityForResult(intent, 1);
+                startActivityForResult(intent, ADD);
             }
         });
 
@@ -140,7 +153,7 @@ public class CustomerFragment extends Fragment {
                 long customerId = customer.getId();
                 Intent intent = new Intent(getActivity(), CustomerMessageActivity.class);
                 intent.putExtra("customerId", customerId);
-                startActivityForResult(intent, 2);
+                startActivityForResult(intent, MESSAGE);
             }
         });
 

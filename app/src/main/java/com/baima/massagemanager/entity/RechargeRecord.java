@@ -10,7 +10,7 @@ public class RechargeRecord extends LitePalSupport {
     private double rechargeAmount; //充值金额
     private double rechargeHour; //充值小时数
     private double remainder; //剩余小时数
-    private String remark=""; //备注
+    private String remark = ""; //备注
 
     public RechargeRecord() {
     }

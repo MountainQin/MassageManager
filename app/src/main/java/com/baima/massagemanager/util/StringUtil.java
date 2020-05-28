@@ -15,6 +15,7 @@ public class StringUtil {
 
     /**
      * 如果 指定的double是金额，小数部分保留两位
+     *
      * @param d
      * @param isMoney
      * @return

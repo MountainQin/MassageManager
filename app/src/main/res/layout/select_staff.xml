@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:layout_margin="5dp">
+
+<TextView
+    android:id="@+id/tv_title"
+    android:text="选择员工"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
+        <ListView
+            android:id="@+id/lv_staff"
+            android:layout_below="@+id/tv_title"
+            android:layout_above="@+id/tv_other_staff"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
+
+    <TextView
+        android:id="@+id/tv_other_staff"
+        android:text="其他师傅"
+        android:layout_above="@+id/et_other_staff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/et_other_staff"
+        android:hint="请输入其他师傅姓名"
+android:layout_toLeftOf="@+id/tv_ok"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_ok"
+        android:text="确定"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>

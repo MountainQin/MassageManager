@@ -8,11 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.util.StringUtil;
-
-import org.litepal.LitePal;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

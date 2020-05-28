@@ -1,7 +1,5 @@
 package com.baima.massagemanager.entity;
 
-import org.litepal.crud.LitePalSupport;
-
 public class Customer extends Person {
     private double remainder; //剩余
 

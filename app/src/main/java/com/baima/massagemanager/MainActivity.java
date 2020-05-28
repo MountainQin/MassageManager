@@ -1,16 +1,13 @@
 package com.baima.massagemanager;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 
 import com.baima.massagemanager.fragment.CustomerFragment;
 import com.baima.massagemanager.fragment.StaffFragment;
-import com.baima.massagemanager.util.StringUtil;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         fragmentList = new ArrayList<>();
         fragmentList.add(new CustomerFragment());
         fragmentList.add(new StaffFragment());
-        MyFragmentPagerAdapter adapter= new MyFragmentPagerAdapter(getSupportFragmentManager(), fragmentList);
+        MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
     }
 }
