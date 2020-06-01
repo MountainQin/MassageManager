@@ -3,7 +3,6 @@ package com.baima.massagemanager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,10 +13,7 @@ import android.widget.Toast;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.entity.Staff;
-import com.baima.massagemanager.fragment.StaffFragment;
 import com.baima.massagemanager.util.PersonUtil;
-
-import org.litepal.LitePal;
 
 public class AddCustomerStaffActivity extends AppCompatActivity {
 
@@ -130,9 +126,9 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
                 RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeStamp, rechargeAmount, rechargeHour, rechargeHour, remark);
                 isSaved = rechargeRecord.save();
 
-            } else if (type ==ADD_STAFF){
+            } else if (type == ADD_STAFF) {
                 //如果 是添加员工，保存员工
-                isSaved= new Staff(number, name, phoneNumber, 0)
+                isSaved = new Staff(number, name, phoneNumber, 0)
                         .save();
             }
 

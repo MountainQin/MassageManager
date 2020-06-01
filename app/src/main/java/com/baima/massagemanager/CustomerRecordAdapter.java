@@ -37,7 +37,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             tv_recharge_time = view.findViewById(R.id.tv_recharge_time);
             tv_recharge_amount = view.findViewById(R.id.tv_recharge_amount);
             tv_recharge_hour = view.findViewById(R.id.tv_recharge_hour);
-            tv_remainder = view.findViewById(R.id.tv_remainder);
+            tv_remainder = view.findViewById(R.id.tv_month_time_later);
             tv_remark = view.findViewById(R.id.tv_remark);
         }
     }

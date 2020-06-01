@@ -20,21 +20,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/tv_clear" />
+        android:layout_toLeftOf="@+id/tv_clear" />
 
     <TextView
         android:id="@+id/tv_percentage"
         android:text="提成：0.00"
         android:visibility="gone"
-                android:layout_below="@id/et_search"
+        android:layout_below="@id/et_search"
         android:layout_width="80dp"
         android:layout_height="wrap_content" />
 
-        <TextView
+    <TextView
         android:id="@+id/tv_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/tv_percentage"
+        android:layout_toRightOf="@+id/tv_percentage"
         android:layout_below="@+id/et_search"
         android:text="添加" />
 </RelativeLayout>

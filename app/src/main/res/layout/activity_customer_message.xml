@@ -93,7 +93,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/tv_remainder"
+                android:id="@+id/tv_month_time_later"
                 android:text="remainder"
                 android:layout_width="match_parent"
                 android:layout_height="40dp" />

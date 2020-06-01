@@ -13,7 +13,7 @@ public abstract class Person extends LitePalSupport {
     }
 
     public Person(int number, String name, String phoneNumber) {
-this(number, name,phoneNumber,"");
+        this(number, name, phoneNumber, "");
     }
 
     public Person(int number, String name, String phoneNumber, String remark) {

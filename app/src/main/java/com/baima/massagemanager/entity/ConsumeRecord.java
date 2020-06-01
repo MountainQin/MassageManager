@@ -7,42 +7,15 @@ public class ConsumeRecord extends LitePalSupport {
     //如果 不同的记录的消费时间戳和顾客 ID都相同就是同一次消费
     private long consumeTimestamp; //消费的时间戳
     private long customerId;
-    private double consumeHour; //消费的小时数
+    private double consumeTime; //消费的时间
     private double remainder; //剩余小时数
+    private String customeName; //如果 是普通 顾客 可以设置姓名
 
     private long staffId;
-    private double hourOfCurrentMonth;
-    private String staffNames;
-    private String otherStaffName;
-    private int staffCount = 1; //本次消费参与的员工的个数
+    private double workTime;
+    private double currentMonthTime;
     private String remark;
 
-    public ConsumeRecord() {
-    }
-
-    public ConsumeRecord(long consumeTimestamp, long customerId, double consumeHour, double remainder, long staffId, double hourOfCurrentMonth, String staffNames, int staffCount) {
-        this.consumeTimestamp = consumeTimestamp;
-        this.customerId = customerId;
-        this.consumeHour = consumeHour;
-        this.remainder = remainder;
-        this.staffId = staffId;
-        this.hourOfCurrentMonth = hourOfCurrentMonth;
-        this.staffNames = staffNames;
-        this.staffCount = staffCount;
-    }
-
-    public ConsumeRecord(long consumeTimestamp, long customerId, double consumeHour, double remainder, long staffId, double hourOfCurrentMonth, String staffNames, String otherStaffName, int staffCount, String remark) {
-        this.consumeTimestamp = consumeTimestamp;
-        this.customerId = customerId;
-        this.consumeHour = consumeHour;
-        this.remainder = remainder;
-        this.staffId = staffId;
-        this.hourOfCurrentMonth = hourOfCurrentMonth;
-        this.staffNames = staffNames;
-        this.otherStaffName = otherStaffName;
-        this.staffCount = staffCount;
-        this.remark = remark;
-    }
 
     public long getId() {
         return id;
@@ -68,12 +41,12 @@ public class ConsumeRecord extends LitePalSupport {
         this.customerId = customerId;
     }
 
-    public double getConsumeHour() {
-        return consumeHour;
+    public double getConsumeTime() {
+        return consumeTime;
     }
 
-    public void setConsumeHour(double consumeHour) {
-        this.consumeHour = consumeHour;
+    public void setConsumeTime(double consumeTime) {
+        this.consumeTime = consumeTime;
     }
 
     public double getRemainder() {
@@ -84,6 +57,14 @@ public class ConsumeRecord extends LitePalSupport {
         this.remainder = remainder;
     }
 
+    public String getCustomeName() {
+        return customeName;
+    }
+
+    public void setCustomeName(String customeName) {
+        this.customeName = customeName;
+    }
+
     public long getStaffId() {
         return staffId;
     }
@@ -92,36 +73,20 @@ public class ConsumeRecord extends LitePalSupport {
         this.staffId = staffId;
     }
 
-    public double getHourOfCurrentMonth() {
-        return hourOfCurrentMonth;
+    public double getWorkTime() {
+        return workTime;
     }
 
-    public void setHourOfCurrentMonth(double hourOfCurrentMonth) {
-        this.hourOfCurrentMonth = hourOfCurrentMonth;
+    public void setWorkTime(double workTime) {
+        this.workTime = workTime;
     }
 
-    public String getStaffNames() {
-        return staffNames;
+    public double getCurrentMonthTime() {
+        return currentMonthTime;
     }
 
-    public void setStaffNames(String staffNames) {
-        this.staffNames = staffNames;
-    }
-
-    public String getOtherStaffName() {
-        return otherStaffName;
-    }
-
-    public void setOtherStaffName(String otherStaffName) {
-        this.otherStaffName = otherStaffName;
-    }
-
-    public int getStaffCount() {
-        return staffCount;
-    }
-
-    public void setStaffCount(int staffCount) {
-        this.staffCount = staffCount;
+    public void setCurrentMonthTime(double currentMonthTime) {
+        this.currentMonthTime = currentMonthTime;
     }
 
     public String getRemark() {
@@ -138,13 +103,12 @@ public class ConsumeRecord extends LitePalSupport {
                 "id=" + id +
                 ", consumeTimestamp=" + consumeTimestamp +
                 ", customerId=" + customerId +
-                ", consumeHour=" + consumeHour +
+                ", consumeTime=" + consumeTime +
                 ", remainder=" + remainder +
+                ", customeName='" + customeName + '\'' +
                 ", staffId=" + staffId +
-                ", hourOfCurrentMonth=" + hourOfCurrentMonth +
-                ", staffNames='" + staffNames + '\'' +
-                ", otherStaffName='" + otherStaffName + '\'' +
-                ", staffCount=" + staffCount +
+                ", workTime=" + workTime +
+                ", currentMonthTime=" + currentMonthTime +
                 ", remark='" + remark + '\'' +
                 '}';
     }

@@ -1,8 +1,6 @@
 package com.baima.massagemanager.entity;
 
-import org.litepal.crud.LitePalSupport;
-
-public class Staff extends Person{
+public class Staff extends Person {
 
     private double hoursOfCurrentMonth;
 
@@ -27,4 +25,4 @@ public class Staff extends Person{
         this.hoursOfCurrentMonth = hoursOfCurrentMonth;
     }
 
-    }
+}

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll_view"
     android:layout_margin="5dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,11 +18,51 @@
             android:layout_width="match_parent"
             android:layout_height="40dp" />
 
-        <android.support.v7.widget.AppCompatSpinner
-            android:id="@+id/spinner_time"
+        <TextView
+            android:text="员工列表"
             android:layout_width="match_parent"
-            android:layout_height="40dp"></android.support.v7.widget.AppCompatSpinner>
+            android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:id="@+id/layout_staff"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_select_staff"
+            android:text="选择员工"
+            android:layout_width="match_parent"
+            android:layout_height="40dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:text="顾客剩余："
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/tv_remainder"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/tv_consume_time"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/tv_remainder_later"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -33,7 +74,6 @@
                 android:id="@+id/date_picker"
                 android:calendarViewShown="false"
                 android:datePickerMode="spinner"
-                android:spinnersShown="true"
                 android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"></DatePicker>
@@ -46,45 +86,6 @@
                 android:layout_height="wrap_content"></TimePicker>
         </LinearLayout>
 
-        <TextView
-            android:text="剩余小时数"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
-
-        <EditText
-            android:id="@+id/et_remainder"
-            android:hint="请输入剩余小时数"
-            android:inputType="number|numberDecimal"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
-
-        <TextView
-            android:id="@+id/tv_select_staff"
-            android:text="选择员工"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
-
-        <TextView
-            android:text="本月小时数"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <EditText
-            android:id="@+id/et_hour_of_month"
-            android:hint="请输入本月小时数"
-
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="其他师傅"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
-
-        <EditText
-            android:id="@+id/et_other_staff"
-            android:hint="请输入其他师傅姓名"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
 
         <TextView
             android:text="备注"

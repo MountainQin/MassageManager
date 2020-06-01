@@ -76,7 +76,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         tv_number = findViewById(R.id.tv_number);
         tv_name = findViewById(R.id.tv_name);
         tv_phone_number = findViewById(R.id.tv_phone_number);
-        tv_remainder = findViewById(R.id.tv_remainder);
+        tv_remainder = findViewById(R.id.tv_month_time_later);
         tv_remark = findViewById(R.id.tv_remark);
         rv_customer_record = findViewById(R.id.rv_customer_record);
 
