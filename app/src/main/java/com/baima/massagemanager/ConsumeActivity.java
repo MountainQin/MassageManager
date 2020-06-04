@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -37,6 +38,7 @@ import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class ConsumeActivity extends AppCompatActivity implements View.OnClickListener {
@@ -46,8 +48,6 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     private static final int REMAINDER_LATER = 3;
     private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
     private TextView tv_select_staff;
-    private DatePicker date_picker;
-    private TimePicker time_picker;
     private long timeMillis;
     private Calendar calendar;
     private Customer customer;
@@ -56,6 +56,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     private TextView tv_remainder_later;
     private double remainderLater;
     private double consumeTime;
+    private TextView tv_date_time;
+    private EditText et_remark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,9 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                 Intent intent1 = new Intent(ConsumeActivity.this, EditActivity.class);
                 startActivityForResult(intent1, REMAINDER_LATER);
                 break;
+            case R.id.tv_date_time:
+                showSelectDateTimePopWindow();
+                break;
         }
     }
 
@@ -117,6 +122,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     consumeTime = aDouble;
                     remainderLater = customer.getRemainder() - consumeTime;
                     tv_remainder_later.setText("= " + StringUtil.doubleTrans(remainderLater));
+                    refreshDateTime();
                     break;
                 case REMAINDER_LATER:
                     tv_remainder_later.setText("= " + StringUtil.doubleTrans(aDouble));
@@ -136,8 +142,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         tv_consume_time = findViewById(R.id.tv_consume_time);
         tv_remainder_later = findViewById(R.id.tv_remainder_later);
 
-        date_picker = findViewById(R.id.date_picker);
-        time_picker = findViewById(R.id.time_picker);
+        tv_date_time = findViewById(R.id.tv_date_time);
+        et_remark = findViewById(R.id.et_remark);
 
         //设置编号 姓名
         Intent intent = getIntent();
@@ -154,24 +160,40 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
         //日期时间
         calendar = Calendar.getInstance();
-        timeMillis = System.currentTimeMillis();
-        time_picker.setIs24HourView(true);
-
+        //秒数毫秒数清0
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        timeMillis = calendar.getTimeInMillis();
+        tv_date_time.setText(new Date(timeMillis).toLocaleString());
 
         tv_select_staff.setOnClickListener(this);
         tv_consume_time.setOnClickListener(this);
         tv_remainder_later.setOnClickListener(this);
+        tv_date_time.setOnClickListener(this);
     }
 
     //保存数据
     private void saveData() {
-        //获取 数据 】
-        //消费时间戳
-        calendar.set(date_picker.getYear(), date_picker.getMonth(), date_picker.getDayOfMonth(),
-                time_picker.getCurrentHour(), time_picker.getCurrentMinute(), 0);
-        //秒数毫秒数清0
-        calendar.set(Calendar.MILLISECOND, 0);
-        long consumeTimestamp = calendar.getTimeInMillis();
+        //如果 没选择员工,设置员工ID为-1
+        if (consumeRecordList.size() == 0) {
+            ConsumeRecord consumeRecord = new ConsumeRecord();
+            setCustomerData(consumeRecord);
+            consumeRecord.setStaffId(-1);
+            consumeRecord.setWorkTime(consumeTime);
+            consumeRecord.save();
+        }
+        //如果 选择了员工
+        for (ConsumeRecord consumeRecord : consumeRecordList) {
+            setCustomerData(consumeRecord);
+            consumeRecord.save();
+        }
+
+        //保存顾客 表的数据
+        customer.setRemainder(remainderLater);
+        customer.update(customer.getId());
+        Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
+        finish();
     }
 
     //显示 选择员工悬浮 窗口
@@ -197,7 +219,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
         //显示 员工悬浮 窗
         pw_staff.setContentView(view);
-        pw_staff.setBackgroundDrawable(new ColorDrawable(0x88000000));
+        pw_staff.setBackgroundDrawable(new ColorDrawable(0x88888888));
         if (!pw_staff.isShowing()) {
             pw_staff.showAtLocation(tv_select_staff, Gravity.CENTER, 0, 0);
         }
@@ -268,6 +290,41 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+    }
+
+    //选择日期时间悬浮 窗
+    private void showSelectDateTimePopWindow() {
+        PopupWindow popupWindow = new PopupWindow(tv_date_time, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, true);
+        View view = getLayoutInflater().inflate(R.layout.date_time_picker, null);
+        DatePicker date_picker = view.findViewById(R.id.date_picker);
+        TimePicker time_picker = view.findViewById(R.id.time_picker);
+
+        time_picker.setIs24HourView(true);
+        time_picker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
+        time_picker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x88888888));
+        popupWindow.setContentView(view);
+        if (!popupWindow.isShowing()) {
+            popupWindow.showAtLocation(tv_date_time, Gravity.CENTER, 0, 0);
+        }
+
+        //java.lang.NoSuchMethodError:
+//        date_picker.setOnDateChangedListener(new DatePicker.OnDateChangedListener() {
+        date_picker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                calendar.set(year, monthOfYear, dayOfMonth);
+                tv_date_time.setText(new Date(calendar.getTimeInMillis()).toLocaleString());
+            }
+        });
+        time_picker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calendar.set(Calendar.MINUTE, minute);
+                tv_date_time.setText(new Date(calendar.getTimeInMillis()).toLocaleString());
+            }
+        });
     }
 
     //添加员工到布局
@@ -348,9 +405,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        // 调整日期时间选择器的时间，
                         double workTime = (item.getItemId() + 1) * 0.5;
-                        refreshDateTime();
 
                         //设置员工顾客 数据
                         int childId = layout_staff.indexOfChild(view);
@@ -361,6 +416,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                         tv_month_time_later.setText("= " + StringUtil.doubleTrans(monthTimeLater));
 
                         refreshStaffConsumeData();
+                        refreshDateTime();
                         return true;
                     }
                 });
@@ -415,9 +471,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         long workMillis = (long) (maxWorkTime * 1000 * 60 * 60);
 
         calendar.setTimeInMillis(timeMillis - workMillis);
-        date_picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        time_picker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
-        time_picker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+        tv_date_time.setText(new Date(calendar.getTimeInMillis()).toLocaleString());
     }
 
 
@@ -433,5 +487,15 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
             }
         });
+    }
+
+    //设置顾客 数据
+    private void setCustomerData(ConsumeRecord consumeRecord) {
+        consumeRecord.setConsumeTimestamp(calendar.getTimeInMillis());
+        consumeRecord.setCustomerId(customer.getId());
+        consumeRecord.setConsumeTime(consumeTime);
+        consumeRecord.setRemainder(remainderLater);
+        consumeRecord.setCustomeName(customer.getName());
+        consumeRecord.setRemark(et_remark.getText().toString());
     }
 }
