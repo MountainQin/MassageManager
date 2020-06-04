@@ -8,9 +8,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.util.StringUtil;
@@ -18,6 +20,8 @@ import com.baima.massagemanager.util.StringUtil;
 import org.litepal.LitePal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CustomerMessageActivity extends AppCompatActivity implements View.OnClickListener {
@@ -25,7 +29,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
 
     private long customerId;
     private CustomerRecordAdapter adapter;
-    private List<RechargeRecord> rechargeRecordList = new ArrayList<>();
+    private List consumeRechargeRecordList = new ArrayList();
     private RecyclerView rv_customer_record;
     private TextView tv_number;
     private TextView tv_name;
@@ -46,7 +50,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_delete:
-                showDeleteDialog();
+                showDeleteStaffDialog();
                 break;
             case R.id.tv_recharge:
                 //打开充值活动
@@ -82,7 +86,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rv_customer_record.setLayoutManager(linearLayoutManager);
-        adapter = new CustomerRecordAdapter(this, rechargeRecordList);
+        adapter = new CustomerRecordAdapter(this, consumeRechargeRecordList);
         rv_customer_record.setAdapter(adapter);
 
         //刷新 顾客 信息
@@ -113,15 +117,13 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         }
 
         //记录
-        rechargeRecordList.clear();
-        rechargeRecordList.addAll(
-                LitePal.where("customerId=?", String.valueOf(customerId)).order("timeStamp desc").find(RechargeRecord.class)
-        );
+        consumeRechargeRecordList.clear();
+        consumeRechargeRecordList.addAll(getConsumeRechargeRecordList());
         adapter.notifyDataSetChanged();
     }
 
-    //显示 删除对话框
-    private void showDeleteDialog() {
+    //显示 删除员工对话框
+    private void showDeleteStaffDialog() {
         List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
         if (customerList.size() < 1) {
             return;
@@ -149,5 +151,50 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                     }
                 })
                 .show();
+    }
+
+    //获取 消费和充值的记录的集合
+    private List getConsumeRechargeRecordList() {
+        List consumeRechargeRecordList = new ArrayList<>();
+        List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("timeStamp desc").order("id desc")
+                .find(RechargeRecord.class);
+        consumeRechargeRecordList.addAll(rechargeRecordList);
+
+        List<ConsumeRecord> consumeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("consumeTimestamp desc").order("id desc")
+                .find(ConsumeRecord.class);
+        //去掉重复
+        for (int i = 0; i < consumeRecordList.size(); i++) {
+            ConsumeRecord consumeRecord = consumeRecordList.get(i);
+            for (int j = i + 1; j < consumeRecordList.size(); j++) {
+                ConsumeRecord consumeRecord1 = consumeRecordList.get(j);
+if (consumeRecord.equals(consumeRecord1)){
+    consumeRecordList.remove(j);
+    j--;
+}
+            }
+        }
+        consumeRechargeRecordList.addAll(consumeRecordList);
+
+        //消费和充值一起按时间排序
+        Collections.sort(consumeRechargeRecordList, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                long timestamp1 = 0;
+                if (o1 instanceof ConsumeRecord) {
+                    timestamp1 = ((ConsumeRecord) o1).getConsumeTimestamp();
+                } else if (o1 instanceof RechargeRecord) {
+                    timestamp1 = ((RechargeRecord) o1).getTimeStamp();
+                }
+
+                long timestamp2 = 0;
+                if (o2 instanceof ConsumeRecord) {
+                    timestamp2 = ((ConsumeRecord) o2).getConsumeTimestamp();
+                } else if (o2 instanceof RechargeRecord) {
+                    timestamp2 = ((RechargeRecord) o2).getTimeStamp();
+                }
+                return (int) (timestamp2 - timestamp1);
+            }
+        });
+        return consumeRechargeRecordList;
     }
 }

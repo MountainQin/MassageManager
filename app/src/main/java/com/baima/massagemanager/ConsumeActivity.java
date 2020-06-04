@@ -179,12 +179,19 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             ConsumeRecord consumeRecord = new ConsumeRecord();
             setCustomerData(consumeRecord);
             consumeRecord.setStaffId(-1);
+            consumeRecord.setStaffName("未选择员工");
             consumeRecord.setWorkTime(consumeTime);
             consumeRecord.save();
         }
         //如果 选择了员工
+        //获取 所有参与的姓名
+        StringBuffer stringBuffer = new StringBuffer();
+        for (ConsumeRecord consumeRecord : consumeRecordList) {
+                    stringBuffer.append(consumeRecord.getStaffName()).append(",");
+        }
         for (ConsumeRecord consumeRecord : consumeRecordList) {
             setCustomerData(consumeRecord);
+            consumeRecord.setStaffName(stringBuffer.toString());
             consumeRecord.save();
         }
 
@@ -352,6 +359,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         //保存消费记录到集合
         ConsumeRecord consumeRecord = new ConsumeRecord();
         consumeRecord.setStaffId(staff.getId());
+        consumeRecord.setStaffName(name);
         consumeRecord.setWorkTime(workTime);
         consumeRecord.setCurrentMonthTime(currentMonthTime + workTime);
         consumeRecordList.add(consumeRecord);

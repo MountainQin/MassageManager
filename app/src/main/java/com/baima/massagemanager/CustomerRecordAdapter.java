@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.util.StringUtil;
 
@@ -17,14 +18,17 @@ import java.util.List;
 
 public class CustomerRecordAdapter extends RecyclerView.Adapter {
 
+    private static final int TYPE_CONSUME_RECORD = 1;
+    private static final int TYPE_RECHARGE_RECORD = 2;
     private Context context;
-    private List<RechargeRecord> rechargeRecordList;
+    private List consumeRechargeRecordList; //消费充值记录的集合
 
-    public CustomerRecordAdapter(Context context, List<RechargeRecord> rechargeRecordList) {
+    public CustomerRecordAdapter(Context context, List consumeRechargeRecordList) {
         this.context = context;
-        this.rechargeRecordList = rechargeRecordList;
+        this.consumeRechargeRecordList = consumeRechargeRecordList;
     }
 
+    //对应充值记录
     class RechargeRecordViewHolder extends RecyclerView.ViewHolder {
         TextView tv_recharge_time;
         TextView tv_recharge_amount;
@@ -42,35 +46,84 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
         }
     }
 
+    //对应消费记录
+    class ConsumeRecordViewHolder extends RecyclerView.ViewHolder {
+        TextView tv_time;
+        TextView tv_consume_time;
+        TextView tv_remainder;
+        TextView tv_staff;
+        TextView tv_remark;
+
+        public ConsumeRecordViewHolder(View view) {
+            super(view);
+            tv_time = view.findViewById(R.id.tv1);
+            tv_consume_time = view.findViewById(R.id.tv2);
+            tv_remainder = view.findViewById(R.id.tv3);
+            tv_staff = view.findViewById(R.id.tv4);
+            tv_remark = view.findViewById(R.id.tv5);
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        //项目的类型
+        Object o = consumeRechargeRecordList.get(position);
+        if (o instanceof ConsumeRecord) {
+            return TYPE_CONSUME_RECORD;
+        } else if (o instanceof RechargeRecord) {
+                return TYPE_RECHARGE_RECORD;
+            }
+            return 0;
+        }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_recharge_record, parent, false);
-        RechargeRecordViewHolder rechargeRecordViewHolder = new RechargeRecordViewHolder(view);
-        return rechargeRecordViewHolder;
+        View view = null;
+        if (viewType == TYPE_CONSUME_RECORD) {
+            //消费
+            view = LayoutInflater.from(context).inflate(R.layout.item_consume_record, parent, false);
+            return new ConsumeRecordViewHolder(view);
+        } else {
+            //充值
+            view = LayoutInflater.from(context).inflate(R.layout.item_recharge_record, parent, false);
+            return new RechargeRecordViewHolder(view);
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        RechargeRecord rechargeRecord = rechargeRecordList.get(position);
-        RechargeRecordViewHolder rechargeRecordViewHolder = (RechargeRecordViewHolder) holder;
-        //把时间戳格式化
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分");
-        Date date = new Date(rechargeRecord.getTimeStamp());
-        String format = simpleDateFormat.format(date);
-        rechargeRecordViewHolder.tv_recharge_time.setText(format);
-        rechargeRecordViewHolder.tv_recharge_amount.setText("充值金额：" +
-                StringUtil.doubleTrans(rechargeRecord.getRechargeAmount(), true));
-        rechargeRecordViewHolder.tv_recharge_hour.setText("充值：" +
-                StringUtil.doubleTrans(rechargeRecord.getRechargeHour()) + "小时");
-        rechargeRecordViewHolder.tv_remainder.setText("剩余：" +
-                StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
-        rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
+        Object o = consumeRechargeRecordList.get(position);
+        if (o instanceof  ConsumeRecord) {
+            //消费
+            ConsumeRecordViewHolder consumeRecordViewHolder = (ConsumeRecordViewHolder) holder;
+            ConsumeRecord consumeRecord = (ConsumeRecord) o;
+            long consumeTimestamp = consumeRecord.getConsumeTimestamp();
+            consumeRecordViewHolder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
+            String consumeTimeStr = StringUtil.doubleTrans(consumeRecord.getConsumeTime());
+            consumeRecordViewHolder.tv_consume_time.setText("消费：" + consumeTimeStr + "小时");
+            String remainderStr = StringUtil.doubleTrans(consumeRecord.getRemainder());
+            consumeRecordViewHolder.tv_remainder.setText("剩余：" + remainderStr + "小时");
+            consumeRecordViewHolder.tv_staff.setText(consumeRecord.getStaffName());
+            consumeRecordViewHolder.tv_remark.setText(consumeRecord.getRemark());
+        }else if (o instanceof  RechargeRecord){
+            //充值
+            RechargeRecordViewHolder rechargeRecordViewHolder = (RechargeRecordViewHolder) holder;
+            RechargeRecord rechargeRecord = (RechargeRecord) o;
+            long timeStamp = rechargeRecord.getTimeStamp();
+            rechargeRecordViewHolder.tv_recharge_time.setText(new Date(timeStamp).toLocaleString());
+            rechargeRecordViewHolder.tv_recharge_amount.setText("充值金额：" +
+                    StringUtil.doubleTrans(rechargeRecord.getRechargeAmount(), true));
+            rechargeRecordViewHolder.tv_recharge_hour.setText("充值：" +
+                    StringUtil.doubleTrans(rechargeRecord.getRechargeHour()) + "小时");
+            rechargeRecordViewHolder.tv_remainder.setText("剩余：" +
+                    StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
+            rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
+        }
     }
 
     @Override
     public int getItemCount() {
-        return rechargeRecordList.size();
+        return consumeRechargeRecordList.size();
     }
 }
