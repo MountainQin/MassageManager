@@ -8,13 +8,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
+import com.baima.massagemanager.interfaces.OnItemListener;
 import com.baima.massagemanager.util.StringUtil;
 
 import org.litepal.LitePal;
@@ -26,6 +26,8 @@ import java.util.List;
 
 public class CustomerMessageActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final int RECHARGE = 3;
+    private static final int CONSUME = 4;
 
     private long customerId;
     private CustomerRecordAdapter adapter;
@@ -56,7 +58,13 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                 //打开充值活动
                 Intent intent = new Intent(this, RechargeActivity.class);
                 intent.putExtra("customerId", customerId);
-                startActivityForResult(intent, 2);
+                startActivityForResult(intent, RECHARGE);
+                break;
+            case R.id.tv_consume:
+                //消费
+                Intent intent1 = new Intent(CustomerMessageActivity.this, ConsumeActivity.class);
+                intent1.putExtra("customerId", customerId);
+                startActivityForResult(intent1, CONSUME);
                 break;
         }
     }
@@ -95,6 +103,15 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         if (customerId > 0) {
             refreshCustomerMessage();
         }
+
+        adapter.setOnItemListener(new OnItemListener() {
+            @Override
+            public void dataChange(double remainder) {
+                String remainderStr = StringUtil.doubleTrans(remainder);
+                tv_remainder.setText("剩余：" + remainderStr + "小时");
+                setResult(RESULT_OK);
+            }
+        });
 
         tv_delete.setOnClickListener(this);
         tv_search.setOnClickListener(this);
@@ -156,10 +173,12 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
     //获取 消费和充值的记录的集合
     private List getConsumeRechargeRecordList() {
         List consumeRechargeRecordList = new ArrayList<>();
+        //充值记录
         List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("timeStamp desc").order("id desc")
                 .find(RechargeRecord.class);
         consumeRechargeRecordList.addAll(rechargeRecordList);
 
+        //消费记录
         List<ConsumeRecord> consumeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("consumeTimestamp desc").order("id desc")
                 .find(ConsumeRecord.class);
         //去掉重复
@@ -167,10 +186,10 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
             ConsumeRecord consumeRecord = consumeRecordList.get(i);
             for (int j = i + 1; j < consumeRecordList.size(); j++) {
                 ConsumeRecord consumeRecord1 = consumeRecordList.get(j);
-if (consumeRecord.equals(consumeRecord1)){
-    consumeRecordList.remove(j);
-    j--;
-}
+                if (consumeRecord.getTimestampFlag()==consumeRecord1.getTimestampFlag()){
+                    consumeRecordList.remove(j);
+                    j--;
+                }
             }
         }
         consumeRechargeRecordList.addAll(consumeRecordList);

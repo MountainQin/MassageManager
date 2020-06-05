@@ -83,7 +83,8 @@ public class RechargeActivity extends AppCompatActivity {
             customer.update(customer.getId());
 
             //保存记录
-            long timeStamp = System.currentTimeMillis();
+            //秒数毫秒数清零
+            long timeStamp = System.currentTimeMillis() / 1000 / 60 * 1000 * 60;
             RechargeRecord rechargeRecord = new RechargeRecord(customerId, timeStamp, rechargeAmount, rechargeHour, remainder, remark);
             boolean isSaved = rechargeRecord.save();
 

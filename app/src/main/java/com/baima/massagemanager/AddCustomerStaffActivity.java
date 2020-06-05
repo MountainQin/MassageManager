@@ -121,7 +121,8 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
 
                 //保存充值记录
                 long customerIdd = customer.getId();
-                long timeStamp = System.currentTimeMillis();
+                //秒数毫秒数清零
+                long timeStamp = System.currentTimeMillis()/1000/60*1000*60;
                 remark = "";
                 RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeStamp, rechargeAmount, rechargeHour, rechargeHour, remark);
                 isSaved = rechargeRecord.save();

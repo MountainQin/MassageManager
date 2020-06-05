@@ -166,14 +166,21 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         timeMillis = calendar.getTimeInMillis();
         tv_date_time.setText(new Date(timeMillis).toLocaleString());
 
+
         tv_select_staff.setOnClickListener(this);
         tv_consume_time.setOnClickListener(this);
         tv_remainder_later.setOnClickListener(this);
         tv_date_time.setOnClickListener(this);
+
     }
 
     //保存数据
     private void saveData() {
+        if (consumeTime<=0){
+            Toast.makeText(this, "顾客 没有消费，请检查 重试！", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        long timestampFlag = System.currentTimeMillis();
         //如果 没选择员工,设置员工ID为-1
         if (consumeRecordList.size() == 0) {
             ConsumeRecord consumeRecord = new ConsumeRecord();
@@ -181,6 +188,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             consumeRecord.setStaffId(-1);
             consumeRecord.setStaffName("未选择员工");
             consumeRecord.setWorkTime(consumeTime);
+            consumeRecord.setTimestampFlag(timestampFlag);
             consumeRecord.save();
         }
         //如果 选择了员工
@@ -192,6 +200,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         for (ConsumeRecord consumeRecord : consumeRecordList) {
             setCustomerData(consumeRecord);
             consumeRecord.setStaffName(stringBuffer.toString());
+            consumeRecord.setTimestampFlag(timestampFlag);
             consumeRecord.save();
         }
 

@@ -1,6 +1,8 @@
 package com.baima.massagemanager;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,10 +11,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
+import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
+import com.baima.massagemanager.interfaces.OnItemListener;
 import com.baima.massagemanager.util.StringUtil;
 
-import java.text.SimpleDateFormat;
+import org.litepal.LitePal;
+
 import java.util.Date;
 import java.util.List;
 
@@ -22,14 +27,25 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
     private static final int TYPE_RECHARGE_RECORD = 2;
     private Context context;
     private List consumeRechargeRecordList; //消费充值记录的集合
+    private OnItemListener onItemListener;
 
     public CustomerRecordAdapter(Context context, List consumeRechargeRecordList) {
         this.context = context;
         this.consumeRechargeRecordList = consumeRechargeRecordList;
     }
 
+    /**
+     * 项目的监听
+     *
+     * @param onItemListener
+     */
+    public void setOnItemListener(OnItemListener onItemListener) {
+        this.onItemListener = onItemListener;
+    }
+
     //对应充值记录
     class RechargeRecordViewHolder extends RecyclerView.ViewHolder {
+        View view;
         TextView tv_recharge_time;
         TextView tv_recharge_amount;
         TextView tv_recharge_hour;
@@ -38,6 +54,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
 
         public RechargeRecordViewHolder(View view) {
             super(view);
+            this.view = view;
             tv_recharge_time = view.findViewById(R.id.tv_recharge_time);
             tv_recharge_amount = view.findViewById(R.id.tv_recharge_amount);
             tv_recharge_hour = view.findViewById(R.id.tv_recharge_hour);
@@ -48,19 +65,23 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
 
     //对应消费记录
     class ConsumeRecordViewHolder extends RecyclerView.ViewHolder {
+        View view;
         TextView tv_time;
         TextView tv_consume_time;
         TextView tv_remainder;
         TextView tv_staff;
         TextView tv_remark;
+        TextView tv_timestamp_flag;
 
         public ConsumeRecordViewHolder(View view) {
             super(view);
+            this.view = view;
             tv_time = view.findViewById(R.id.tv1);
             tv_consume_time = view.findViewById(R.id.tv2);
             tv_remainder = view.findViewById(R.id.tv3);
             tv_staff = view.findViewById(R.id.tv4);
             tv_remark = view.findViewById(R.id.tv5);
+            tv_timestamp_flag = view.findViewById(R.id.tv6);
         }
     }
 
@@ -71,10 +92,10 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
         if (o instanceof ConsumeRecord) {
             return TYPE_CONSUME_RECORD;
         } else if (o instanceof RechargeRecord) {
-                return TYPE_RECHARGE_RECORD;
-            }
-            return 0;
+            return TYPE_RECHARGE_RECORD;
         }
+        return 0;
+    }
 
     @NonNull
     @Override
@@ -92,12 +113,12 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
         Object o = consumeRechargeRecordList.get(position);
-        if (o instanceof  ConsumeRecord) {
+        if (o instanceof ConsumeRecord) {
             //消费
             ConsumeRecordViewHolder consumeRecordViewHolder = (ConsumeRecordViewHolder) holder;
-            ConsumeRecord consumeRecord = (ConsumeRecord) o;
+            final ConsumeRecord consumeRecord = (ConsumeRecord) o;
             long consumeTimestamp = consumeRecord.getConsumeTimestamp();
             consumeRecordViewHolder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
             String consumeTimeStr = StringUtil.doubleTrans(consumeRecord.getConsumeTime());
@@ -106,10 +127,52 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             consumeRecordViewHolder.tv_remainder.setText("剩余：" + remainderStr + "小时");
             consumeRecordViewHolder.tv_staff.setText(consumeRecord.getStaffName());
             consumeRecordViewHolder.tv_remark.setText(consumeRecord.getRemark());
-        }else if (o instanceof  RechargeRecord){
+            consumeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
+            //长按弹出删除对话框
+            consumeRecordViewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    new AlertDialog.Builder(context)
+                            .setTitle("提示")
+                            .setMessage("你确定删除这条记录吗？")
+                            .setNegativeButton("取消", null)
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    //删除数据 表的数据 ，如果 有相同记录都删除
+                                    List<ConsumeRecord> all = LitePal.findAll(ConsumeRecord.class);
+                                    for (int i = 0; i < all.size(); i++) {
+                                        if (consumeRecord.getTimestampFlag() == all.get(i).getTimestampFlag()) {
+                                            all.get(i).delete();
+                                        }
+                                    }
+                                    consumeRecord.delete();
+                                    //修改顾客 剩余时间
+                                    long customerId = consumeRecord.getCustomerId();
+                                    List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
+                                    if (customerList.size() > 0) {
+                                        Customer customer = customerList.get(0);
+                                        customer.setRemainder(customer.getRemainder() + consumeRecord.getConsumeTime());
+                                        customer.update(customer.getId());
+                                        //修改顾客基本信息
+                                        if (onItemListener != null) {
+                                            onItemListener.dataChange(customer.getRemainder());
+                                        }
+                                    }
+
+                                    consumeRechargeRecordList.remove(position);
+                                    notifyDataSetChanged();
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+            });
+        } else if (o instanceof RechargeRecord) {
             //充值
             RechargeRecordViewHolder rechargeRecordViewHolder = (RechargeRecordViewHolder) holder;
-            RechargeRecord rechargeRecord = (RechargeRecord) o;
+            final RechargeRecord rechargeRecord = (RechargeRecord) o;
             long timeStamp = rechargeRecord.getTimeStamp();
             rechargeRecordViewHolder.tv_recharge_time.setText(new Date(timeStamp).toLocaleString());
             rechargeRecordViewHolder.tv_recharge_amount.setText("充值金额：" +
@@ -119,6 +182,40 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             rechargeRecordViewHolder.tv_remainder.setText("剩余：" +
                     StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
             rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
+            //长按弹出删除对话框
+            rechargeRecordViewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    new AlertDialog.Builder(context)
+                            .setTitle("提示")
+                            .setMessage("你确定删除这条记录吗？")
+                            .setNegativeButton("取消", null)
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    //从数据 表删除
+                                    LitePal.delete(RechargeRecord.class, rechargeRecord.getId());
+                                    //修改顾客表数据
+                                    long customerId = rechargeRecord.getCustomerId();
+                                    List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
+                                    if (customerList.size() > 0) {
+                                        Customer customer = customerList.get(0);
+                                        customer.setRemainder(customer.getRemainder() - rechargeRecord.getRechargeHour());
+                                        customer.update(customer.getId());
+                                        if (onItemListener != null) {
+                                            onItemListener.dataChange(customer.getRemainder());
+                                        }
+                                    }
+
+                                    consumeRechargeRecordList.remove(position);
+                                    notifyDataSetChanged();
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+            });
         }
     }
 

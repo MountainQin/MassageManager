@@ -6,7 +6,6 @@ import java.util.Objects;
 
 public class ConsumeRecord extends LitePalSupport {
     private long id;
-    //如果 不同的记录的消费时间戳和顾客 ID都相同就是同一次消费
     private long consumeTimestamp; //消费的时间戳
     private long customerId;
     private double consumeTime; //消费的时间
@@ -18,7 +17,7 @@ public class ConsumeRecord extends LitePalSupport {
     private double workTime;
     private double currentMonthTime;
     private String remark;
-
+    private long timestampFlag; //记录时间戳标记，用于判断 是否是同一次消费
 
     public long getId() {
         return id;
@@ -108,6 +107,14 @@ public class ConsumeRecord extends LitePalSupport {
         this.remark = remark;
     }
 
+    public long getTimestampFlag() {
+        return timestampFlag;
+    }
+
+    public void setTimestampFlag(long timestampFlag) {
+        this.timestampFlag = timestampFlag;
+    }
+
     @Override
     public String toString() {
         return "ConsumeRecord{" +
@@ -118,28 +125,11 @@ public class ConsumeRecord extends LitePalSupport {
                 ", remainder=" + remainder +
                 ", customeName='" + customeName + '\'' +
                 ", staffId=" + staffId +
+                ", staffName='" + staffName + '\'' +
                 ", workTime=" + workTime +
                 ", currentMonthTime=" + currentMonthTime +
                 ", remark='" + remark + '\'' +
+                ", timestampFlag=" + timestampFlag +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ConsumeRecord that = (ConsumeRecord) o;
-        return consumeTimestamp == that.consumeTimestamp &&
-                customerId == that.customerId &&
-                Double.compare(that.consumeTime, consumeTime) == 0 &&
-                Double.compare(that.remainder, remainder) == 0 &&
-                Objects.equals(customeName, that.customeName) &&
-                Objects.equals(staffName, that.staffName);
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(consumeTimestamp, customerId, consumeTime, remainder, customeName, staffName);
     }
 }
