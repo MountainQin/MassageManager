@@ -6,23 +6,12 @@ public class RechargeRecord extends LitePalSupport {
 
     private long id;
     private long customerId; //顾客 ID
-    private long timeStamp;
+    private long timeStamp; //充值 时间
     private double rechargeAmount; //充值金额
     private double rechargeHour; //充值小时数
     private double remainder; //剩余小时数
     private String remark = ""; //备注
-
-    public RechargeRecord() {
-    }
-
-    public RechargeRecord(long customerId, long timeStamp, double rechargeAmount, double rechargeHour, double remainder, String remark) {
-        this.customerId = customerId;
-        this.timeStamp = timeStamp;
-        this.rechargeAmount = rechargeAmount;
-        this.rechargeHour = rechargeHour;
-        this.remainder = remainder;
-        this.remark = remark;
-    }
+    private long timestampFlag; //时间戳标记
 
     public long getId() {
         return id;
@@ -78,5 +67,27 @@ public class RechargeRecord extends LitePalSupport {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public long getTimestampFlag() {
+        return timestampFlag;
+    }
+
+    public void setTimestampFlag(long timestampFlag) {
+        this.timestampFlag = timestampFlag;
+    }
+
+    @Override
+    public String toString() {
+        return "RechargeRecord{" +
+                "id=" + id +
+                ", customerId=" + customerId +
+                ", timeStamp=" + timeStamp +
+                ", rechargeAmount=" + rechargeAmount +
+                ", rechargeHour=" + rechargeHour +
+                ", remainder=" + remainder +
+                ", remark='" + remark + '\'' +
+                ", timestampFlag=" + timestampFlag +
+                '}';
     }
 }

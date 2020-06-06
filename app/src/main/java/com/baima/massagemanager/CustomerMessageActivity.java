@@ -174,12 +174,12 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
     private List getConsumeRechargeRecordList() {
         List consumeRechargeRecordList = new ArrayList<>();
         //充值记录
-        List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("timeStamp desc").order("id desc")
+        List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("id desc")
                 .find(RechargeRecord.class);
         consumeRechargeRecordList.addAll(rechargeRecordList);
 
         //消费记录
-        List<ConsumeRecord> consumeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("consumeTimestamp desc").order("id desc")
+        List<ConsumeRecord> consumeRecordList = LitePal.where("customerId=?", String.valueOf(customerId)).order("id desc")
                 .find(ConsumeRecord.class);
         //去掉重复
         for (int i = 0; i < consumeRecordList.size(); i++) {
@@ -211,7 +211,9 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                 } else if (o2 instanceof RechargeRecord) {
                     timestamp2 = ((RechargeRecord) o2).getTimeStamp();
                 }
-                return (int) (timestamp2 - timestamp1);
+
+//                return (int)(timestamp2-timestamp1);
+                return Long.compare(timestamp2,timestamp1);
             }
         });
         return consumeRechargeRecordList;

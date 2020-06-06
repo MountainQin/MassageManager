@@ -40,7 +40,7 @@ public class EditActivity extends AppCompatActivity {
                 Intent intent = getIntent();
                 try {
                     Double aDouble = Double.valueOf(s);
-                    intent.putExtra("aDouble ", aDouble);
+                    intent.putExtra("aDouble", aDouble);
                     setResult(RESULT_OK, intent);
                     finish();
                 } catch (NumberFormatException e) {

@@ -162,9 +162,13 @@ public class AddCustomerStaffActivity extends AppCompatActivity implements View.
 
                 //保存充值记录
                 long customerIdd = customer.getId();
-                //秒数毫秒数清零
-                remark = "";
-                RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeInMillis, rechargeAmount, rechargeHour, rechargeHour, remark);
+                RechargeRecord rechargeRecord = new RechargeRecord();
+                rechargeRecord.setCustomerId(customerIdd);
+                rechargeRecord.setTimeStamp(timeInMillis);
+                rechargeRecord.setRechargeAmount(rechargeAmount);
+                rechargeRecord.setRechargeHour(rechargeHour);
+                rechargeRecord.setRemainder(rechargeHour);
+                rechargeRecord.setTimestampFlag(System.currentTimeMillis());
                 isSaved = rechargeRecord.save();
 
             } else if (type == ADD_STAFF) {

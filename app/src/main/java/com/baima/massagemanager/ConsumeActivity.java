@@ -108,7 +108,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            double aDouble = data.getDoubleExtra("aDouble ", 0);
+            double aDouble = data.getDoubleExtra("aDouble", 0);
             switch (requestCode) {
                 case MONTH_TIME_LATER:
                     //修改标签内容，修改消费记录的员工时间

@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
+    android:layout_height="wrap_content"
     android:layout_marginTop="5dp"
     android:background="#88880000">
 
@@ -42,6 +42,10 @@
     <TextView
         android:id="@+id/tv_remark"
         android:text="备注"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/tv_timestamp_flag"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

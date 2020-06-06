@@ -51,6 +51,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
         TextView tv_recharge_hour;
         TextView tv_remainder;
         TextView tv_remark;
+        TextView tv_timestamp_flag;
 
         public RechargeRecordViewHolder(View view) {
             super(view);
@@ -60,6 +61,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             tv_recharge_hour = view.findViewById(R.id.tv_recharge_hour);
             tv_remainder = view.findViewById(R.id.tv_remainder);
             tv_remark = view.findViewById(R.id.tv_remark);
+            tv_timestamp_flag = view.findViewById(R.id.tv_timestamp_flag);
         }
     }
 
@@ -187,6 +189,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             rechargeRecordViewHolder.tv_remainder.setText("剩余：" +
                     StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
             rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
+            rechargeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(rechargeRecord.getTimestampFlag()));
             //长按弹出删除对话框
             rechargeRecordViewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
