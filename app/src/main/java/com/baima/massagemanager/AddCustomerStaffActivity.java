@@ -2,12 +2,14 @@ package com.baima.massagemanager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baima.massagemanager.entity.Customer;
@@ -15,8 +17,12 @@ import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.util.PersonUtil;
 
-public class AddCustomerStaffActivity extends AppCompatActivity {
+import java.util.Calendar;
+import java.util.Date;
 
+public class AddCustomerStaffActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final int DATE_TIME = 1;
     /**
      * 添加顾客
      */
@@ -33,6 +39,8 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
     private EditText ed_remark;
     private LinearLayout layout_customer;
     private int type;
+    private TextView tv_date_time;
+    private long timeInMillis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +48,31 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_customer_staff);
 
         initViews();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.tv_date_time:
+                //打开选择日期时间
+                Intent intent = new Intent(this, PickDateTimeActivity.class);
+                intent.putExtra("timeInMillis", timeInMillis);
+                startActivityForResult(intent, DATE_TIME);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case DATE_TIME:
+                if (resultCode == RESULT_OK) {
+                    timeInMillis = data.getLongExtra("timeInMillis", timeInMillis);
+                    tv_date_time.setText(new Date(timeInMillis).toLocaleString());
+                }
+                break;
+        }
     }
 
     @Override
@@ -66,6 +99,7 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
         layout_customer = findViewById(R.id.layout_customer);
         ed_recharge_amount = findViewById(R.id.ed_recharge_amount);
         ed_remainder = findViewById(R.id.ed_remainder);
+        tv_date_time = findViewById(R.id.tv_date_time);
         ed_remark = findViewById(R.id.ed_remark);
 
         setTitle("添加");
@@ -82,6 +116,13 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
         }
         ed_number.setText(String.valueOf(number));
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -1);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        timeInMillis = calendar.getTimeInMillis();
+        tv_date_time.setText(new Date(timeInMillis).toLocaleString());
+        tv_date_time.setOnClickListener(this);
     }
 
 
@@ -122,9 +163,8 @@ public class AddCustomerStaffActivity extends AppCompatActivity {
                 //保存充值记录
                 long customerIdd = customer.getId();
                 //秒数毫秒数清零
-                long timeStamp = System.currentTimeMillis()/1000/60*1000*60;
                 remark = "";
-                RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeStamp, rechargeAmount, rechargeHour, rechargeHour, remark);
+                RechargeRecord rechargeRecord = new RechargeRecord(customerIdd, timeInMillis, rechargeAmount, rechargeHour, rechargeHour, remark);
                 isSaved = rechargeRecord.save();
 
             } else if (type == ADD_STAFF) {

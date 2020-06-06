@@ -58,7 +58,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             tv_recharge_time = view.findViewById(R.id.tv_recharge_time);
             tv_recharge_amount = view.findViewById(R.id.tv_recharge_amount);
             tv_recharge_hour = view.findViewById(R.id.tv_recharge_hour);
-            tv_remainder = view.findViewById(R.id.tv_month_time_later);
+            tv_remainder = view.findViewById(R.id.tv_remainder);
             tv_remark = view.findViewById(R.id.tv_remark);
         }
     }
@@ -153,7 +153,12 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                                     List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
                                     if (customerList.size() > 0) {
                                         Customer customer = customerList.get(0);
-                                        customer.setRemainder(customer.getRemainder() + consumeRecord.getConsumeTime());
+                                        double remainder = customer.getRemainder() + consumeRecord.getConsumeTime();
+                                        customer.setRemainder(remainder);
+                                        if (remainder == 0) {
+                                            //更新为默认值
+                                            customer.setToDefault("remainder");
+                                        }
                                         customer.update(customer.getId());
                                         //修改顾客基本信息
                                         if (onItemListener != null) {
@@ -196,17 +201,24 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                                     dialog.dismiss();
                                     //从数据 表删除
                                     LitePal.delete(RechargeRecord.class, rechargeRecord.getId());
-                                    //修改顾客表数据
+
+//修改顾客表数据
                                     long customerId = rechargeRecord.getCustomerId();
                                     List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
                                     if (customerList.size() > 0) {
                                         Customer customer = customerList.get(0);
-                                        customer.setRemainder(customer.getRemainder() - rechargeRecord.getRechargeHour());
+                                        double remainder = customer.getRemainder() - rechargeRecord.getRechargeHour();
+                                        customer.setRemainder(remainder);
+                                        if (remainder == 0) {
+                                            //更新为默认值
+                                            customer.setToDefault("remainder");
+                                        }
                                         customer.update(customer.getId());
                                         if (onItemListener != null) {
                                             onItemListener.dataChange(customer.getRemainder());
                                         }
                                     }
+
 
                                     consumeRechargeRecordList.remove(position);
                                     notifyDataSetChanged();

@@ -21,7 +21,8 @@
         <activity android:name=".CustomerMessageActivity" />
         <activity android:name=".RechargeActivity" />
         <activity android:name=".ConsumeActivity" />
-        <activity android:name=".EditActivity"></activity>
+        <activity android:name=".EditActivity" />
+        <activity android:name=".PickDateTimeActivity"></activity>
     </application>
 
 </manifest>

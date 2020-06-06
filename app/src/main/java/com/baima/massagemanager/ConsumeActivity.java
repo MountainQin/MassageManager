@@ -350,7 +350,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         final TextView tv_name = view.findViewById(R.id.tv_name);
         TextView tv_current_month_time = view.findViewById(R.id.tv_current_month_time);
         final TextView tv_work_time = view.findViewById(R.id.tv_work_time);
-        final TextView tv_month_time_later = view.findViewById(R.id.tv_month_time_later);
+        final TextView tv_month_time_later = view.findViewById(R.id.tv_remainder);
 
         view.setMinimumHeight(ScreenUtil.getScreenHeightPix(this) / 10);
         String name = staff.getNumber() + "号 " + staff.getName();
