@@ -23,6 +23,7 @@ import com.baima.massagemanager.AddCustomerStaffActivity;
 import com.baima.massagemanager.EditActivity;
 import com.baima.massagemanager.R;
 import com.baima.massagemanager.StaffAdapter;
+import com.baima.massagemanager.StaffMessageActivity;
 import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.util.StringUtil;
 
@@ -31,10 +32,11 @@ import org.litepal.LitePal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaffFragment extends Fragment implements View.OnClickListener, StaffAdapter.OnItemListener, TextWatcher, AdapterView.OnItemLongClickListener {
+public class StaffFragment extends Fragment implements View.OnClickListener, StaffAdapter.OnItemListener, TextWatcher, AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener {
 
     private static final int ADD = 1;
     private static final int ALTER_HOUR_PERCENTAGE = 2;
+    private static final int STAFF_MESSAGE = 3;
 
     private List<Staff> staffList = new ArrayList<>();
     private SharedPreferences sharedPreferences;
@@ -70,7 +72,15 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
         tv_add.setOnClickListener(this);
         tv_hour_percentage.setOnClickListener(this);
         lv_staff.setOnItemLongClickListener(this);
+        lv_staff.setOnItemClickListener(this);
         return view;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent(getActivity(), StaffMessageActivity.class);
+        intent.putExtra("staffId", staffList.get(position).getId());
+        startActivityForResult(intent, STAFF_MESSAGE);
     }
 
     @Override
@@ -152,20 +162,21 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == getActivity().RESULT_OK) {
-            switch (requestCode) {
-                case ADD:
-                    refreshListData();
-                    break;
-                case ALTER_HOUR_PERCENTAGE:
+        switch (requestCode) {
+            case ALTER_HOUR_PERCENTAGE:
+                if (resultCode == getActivity().RESULT_OK) {
                     //修改小时提成
                     hourPercentage = Double.valueOf(data.getStringExtra("inputData"));
                     tv_hour_percentage.setText("提成：" + StringUtil.doubleTrans(hourPercentage, true));
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     edit.putFloat("hourPercentage", (float) hourPercentage);
                     edit.apply();
-                    break;
-            }
+                    return;
+                }
+        }
+
+        if (resultCode==getActivity().RESULT_OK){
+            refreshListData();
         }
     }
 
@@ -184,7 +195,7 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
     }
 
     //显示 删除员工对话框
-    private void showDeleteStaffDialog(final int position) {
+    public void showDeleteStaffDialog(final int position) {
         final Staff staff = staffList.get(position);
         String numberName = staff.getNumber() + "号" + staff.getName();
         String msg = "你确定删除 " + numberName + " 吗？";

@@ -22,7 +22,8 @@
         <activity android:name=".RechargeActivity" />
         <activity android:name=".ConsumeActivity" />
         <activity android:name=".EditActivity" />
-        <activity android:name=".PickDateTimeActivity"></activity>
+        <activity android:name=".PickDateTimeActivity" />
+        <activity android:name=".StaffMessageActivity"></activity>
     </application>
 
 </manifest>

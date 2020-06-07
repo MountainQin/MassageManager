@@ -150,7 +150,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         layout_staff = findViewById(R.id.layout_staff);
         tv_select_staff = findViewById(R.id.tv_select_staff);
 
-        TextView tv_remainder = findViewById(R.id.tv_remainder);
+        TextView tv_remainder = findViewById(R.id.tv_current_month_time);
         tv_consume_time = findViewById(R.id.tv_consume_time);
         tv_remainder_later = findViewById(R.id.tv_remainder_later);
 
@@ -335,7 +335,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         final TextView tv_name = view.findViewById(R.id.tv_name);
         TextView tv_current_month_time = view.findViewById(R.id.tv_current_month_time);
         final TextView tv_work_time = view.findViewById(R.id.tv_work_time);
-        final TextView tv_month_time_later = view.findViewById(R.id.tv_remainder);
+        final TextView tv_month_time_later = view.findViewById(R.id.tv_current_month_time);
 
         view.setMinimumHeight(ScreenUtil.getScreenHeightPix(this) / 10);
         String name = staff.getNumber() + "号 " + staff.getName();
