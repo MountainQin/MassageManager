@@ -53,7 +53,6 @@ public class CustomerFragment extends Fragment {
         TextView tv_add = view.findViewById(R.id.tv_add);
         lv_customer = view.findViewById(R.id.lv_customer);
 
-        et_search.setHint("请输入关键字，编号 或姓名或手机号");
         adapter = new CustomerAdapter(getActivity(), customerList) {
             @Override
             public void onRechargeClick(long customerId) {
@@ -137,6 +136,7 @@ public class CustomerFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //打开添加客户界面
+                et_search.setText("");
                 Intent intent = new Intent(getActivity(), AddCustomerStaffActivity.class);
                 int newNumber = PersonUtil.getNewNumber(Customer.class);
                 intent.putExtra("number", newNumber);

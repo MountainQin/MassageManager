@@ -10,20 +10,21 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_alignBottom="@+id/et_search"
         android:text="清空"
         android:visibility="gone" />
 
     <EditText
         android:id="@+id/et_search"
-        android:hint="请输入关键字，编号或姓名或手机号"
+        android:hint="请输入搜索关键字，编号或姓名或手机号"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/tv_clear" />
 
     <TextView
-        android:id="@+id/tv_percentage"
+        android:id="@+id/tv_hour_percentage"
         android:text="提成：0.00"
         android:visibility="gone"
         android:layout_below="@id/et_search"
@@ -34,7 +35,7 @@
         android:id="@+id/tv_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/tv_percentage"
+        android:layout_toRightOf="@+id/tv_hour_percentage"
         android:layout_below="@+id/et_search"
         android:text="添加" />
 </RelativeLayout>
