@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.view.View;
 import android.widget.TextView;
 
@@ -28,6 +29,11 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
 
     private static final int RECHARGE = 3;
     private static final int CONSUME = 4;
+    private static final int ALTER_NUMBER = 5;
+    private static final int ALTER_NAME = 6;
+    private static final int ALTER_PHONE_NUMBER = 7;
+    private static final int ALTER_REMAINDER = 8;
+    private static final int ALTER_REMARK = 9;
 
     private long customerId;
     private CustomerRecordAdapter adapter;
@@ -38,6 +44,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
     private TextView tv_phone_number;
     private TextView tv_remainder;
     private TextView tv_remark;
+    private Customer customer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
 
     @Override
     public void onClick(View v) {
+        Intent editActivityIntent = null;
         switch (v.getId()) {
             case R.id.tv_delete:
                 showDeleteStaffDialog();
@@ -66,6 +74,32 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                 intent1.putExtra("customerId", customerId);
                 startActivityForResult(intent1, CONSUME);
                 break;
+
+            case R.id.tv_number:
+                editActivityIntent = new Intent(this, EditActivity.class);
+                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_NUMBER);
+                startActivityForResult(editActivityIntent, ALTER_NUMBER);
+                break;
+            case R.id.tv_name:
+                //修改姓名
+                editActivityIntent = new Intent(this, EditActivity.class);
+                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
+                startActivityForResult(editActivityIntent, ALTER_NAME);
+                break;
+            case R.id.tv_phone_number:
+                editActivityIntent = new Intent(this, EditActivity.class);
+                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_PHONE);
+                startActivityForResult(editActivityIntent, ALTER_PHONE_NUMBER);
+                break;
+            case R.id.tv_remainder:
+                editActivityIntent = new Intent(this, EditActivity.class);
+                startActivityForResult(editActivityIntent, ALTER_REMAINDER);
+                break;
+            case R.id.tv_remark:
+                editActivityIntent = new Intent(this, EditActivity.class);
+                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
+                startActivityForResult(editActivityIntent, ALTER_REMARK);
+                break;
         }
     }
 
@@ -73,9 +107,48 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            //刷新 顾客信息，设置返回顾客 列表的结果 ，以便刷新 。
-            refreshCustomerMessage();
+            //设置返回顾客 列表的结果 ，以便刷新 。
             setResult(RESULT_OK);
+            String inputData = data.getStringExtra("inputData");
+            switch (requestCode) {
+                case ALTER_NUMBER:
+                    int number = Integer.valueOf(inputData);
+                    if (number == 0) {
+                        startActivityForResult(data, ALTER_NUMBER);
+                        return;
+                    }
+                    customer.setNumber(number);
+                    customer.update(customer.getId());
+                    refreshBaseMessage();
+                    return;
+                case ALTER_NAME:
+                    customer.setName(inputData);
+                    customer.update(customer.getId());
+                    refreshBaseMessage();
+                    return;
+                case ALTER_PHONE_NUMBER:
+                    customer.setPhoneNumber(inputData);
+                    customer.update(customer.getId());
+                    refreshBaseMessage();
+                    return;
+                case ALTER_REMAINDER:
+                    double remaider = Double.valueOf(inputData);
+                    customer.setRemainder(remaider);
+                    if (remaider == 0) {
+                        customer.setToDefault("remainder");
+                    }
+                    customer.update(customer.getId());
+                    refreshBaseMessage();
+                    return;
+                case ALTER_REMARK:
+                    customer.setRemark(inputData);
+                    customer.update(customer.getId());
+                    refreshBaseMessage();
+                    return;
+            }
+
+            //刷新 顾客信息，
+            refreshRecordList();
         }
     }
 
@@ -101,7 +174,8 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         Intent intent = getIntent();
         customerId = intent.getLongExtra("customerId", 0);
         if (customerId > 0) {
-            refreshCustomerMessage();
+            refreshBaseMessage();
+            refreshRecordList();
         }
 
         adapter.setOnItemListener(new OnItemListener() {
@@ -117,14 +191,19 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         tv_search.setOnClickListener(this);
         tv_recharge.setOnClickListener(this);
         tv_consume.setOnClickListener(this);
+
+        tv_number.setOnClickListener(this);
+        tv_name.setOnClickListener(this);
+        tv_phone_number.setOnClickListener(this);
+        tv_remainder.setOnClickListener(this);
+        tv_remark.setOnClickListener(this);
     }
 
-    //刷新 顾客 信息
-    private void refreshCustomerMessage() {
-        //刷新 基本信息
+    //刷新 基本信息
+    private void refreshBaseMessage() {
         List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
         if (customerList.size() > 0) {
-            Customer customer = customerList.get(0);
+            customer = customerList.get(0);
             tv_number.setText("编号：" + customer.getNumber());
             tv_name.setText("姓名：" + customer.getName());
             tv_phone_number.setText("手机号：" + customer.getPhoneNumber());
@@ -133,7 +212,12 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
             tv_remark.setText("备注：" + customer.getRemark());
         }
 
-        //记录
+
+    }
+
+
+    //刷新 记录列表
+    private void refreshRecordList() {
         consumeRechargeRecordList.clear();
         consumeRechargeRecordList.addAll(getConsumeRechargeRecordList());
         adapter.notifyDataSetChanged();
@@ -213,7 +297,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                 }
 
 //                return (int)(timestamp2-timestamp1);
-                return Long.compare(timestamp2,timestamp1);
+                return Long.compare(timestamp2, timestamp1);
             }
         });
         return consumeRechargeRecordList;

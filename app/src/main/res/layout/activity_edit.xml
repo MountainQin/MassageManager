@@ -7,6 +7,8 @@
 
     <EditText
         android:id="@+id/et"
+        android:hint="请在此处输入内容"
         android:layout_width="match_parent"
+        android:imeOptions="actionDone"
         android:layout_height="60dp" />
 </android.support.constraint.ConstraintLayout>

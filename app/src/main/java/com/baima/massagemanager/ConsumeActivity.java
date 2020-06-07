@@ -57,6 +57,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     private double consumeTime;
     private TextView tv_date_time;
     private EditText et_remark;
+    private long startTimeMillis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +112,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         if (resultCode == RESULT_OK) {
             double aDouble = 0;
             if (data != null) {
-                aDouble = data.getDoubleExtra("aDouble", 0);
+                aDouble = Double.valueOf(data.getStringExtra("inputData"));
             }
             switch (requestCode) {
                 case MONTH_TIME_LATER:
@@ -127,8 +128,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     remainderLater = customer.getRemainder() - consumeTime;
                     tv_remainder_later.setText("= " + StringUtil.doubleTrans(remainderLater));
 
-                    timeMillis -= consumeTime * 1000 * 60 * 60;
-                    timeMillis = timeMillis / 1000 / 60*1000*60;
+                    timeMillis = (long) (startTimeMillis - consumeTime * 1000 * 60 * 60);
+                    timeMillis = timeMillis / 1000 / 60 * 1000 * 60;
                     tv_date_time.setText(new Date(timeMillis).toLocaleString());
                     break;
                 case REMAINDER_LATER:
@@ -174,6 +175,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         //秒数毫秒数清0
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+
+        startTimeMillis = calendar.getTimeInMillis();
         timeMillis = calendar.getTimeInMillis();
         tv_date_time.setText(new Date(timeMillis).toLocaleString());
 
@@ -468,7 +471,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         long workMillis = (long) (maxWorkTime * 1000 * 60 * 60);
-        timeMillis -= workMillis;
+        timeMillis = startTimeMillis - workMillis;
         tv_date_time.setText(new Date(timeMillis).toLocaleString());
     }
 
