@@ -15,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private List<Fragment> fragmentList;
+    public static StaffFragment staffFragment;
+    public static CustomerFragment customerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +25,10 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager = findViewById(R.id.view_pager);
         fragmentList = new ArrayList<>();
-        fragmentList.add(new CustomerFragment());
-        fragmentList.add(new StaffFragment());
+        customerFragment = new CustomerFragment();
+        fragmentList.add(customerFragment);
+        staffFragment = new StaffFragment();
+        fragmentList.add(staffFragment);
         MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
     }

@@ -165,9 +165,11 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
         switch (requestCode) {
             case ALTER_HOUR_PERCENTAGE:
                 if (resultCode == getActivity().RESULT_OK) {
-                    //修改小时提成
+                    //修改小时提成,刷新 列表的数据
                     hourPercentage = Double.valueOf(data.getStringExtra("inputData"));
                     tv_hour_percentage.setText("提成：" + StringUtil.doubleTrans(hourPercentage, true));
+                    adapter.hourPercentage=hourPercentage;
+                    adapter.notifyDataSetChanged();
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     edit.putFloat("hourPercentage", (float) hourPercentage);
                     edit.apply();
@@ -186,7 +188,7 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
     }
 
     //刷新列表
-    private void refreshListData() {
+    public void refreshListData() {
         staffList.clear();
         staffList.addAll(
                 LitePal.order("number").find(Staff.class)

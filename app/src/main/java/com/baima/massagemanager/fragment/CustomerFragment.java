@@ -203,7 +203,7 @@ public class CustomerFragment extends Fragment {
     }
 
     //刷新 顾客 列表
-    private void refreshCustomerList() {
+    public void refreshCustomerList() {
         customerList.clear();
         customerList.addAll(
                 LitePal.order("number").find(Customer.class)

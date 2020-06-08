@@ -1,6 +1,7 @@
 package com.baima.massagemanager;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
@@ -221,6 +222,15 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             consumeRecord.setStaffName(stringBuffer.toString());
             consumeRecord.setTimestampFlag(timestampFlag);
             consumeRecord.save();
+
+            //修改员工本月时间
+            long staffId = consumeRecord.getStaffId();
+            double currentMonthTime = consumeRecord.getCurrentMonthTime();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("hoursOfCurrentMonth", currentMonthTime);
+            LitePal.update(Staff.class, contentValues, staffId);
+            //通知员工列表
+                        MainActivity.staffFragment.refreshListData();
         }
 
         //保存顾客 表的数据
@@ -335,7 +345,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         final TextView tv_name = view.findViewById(R.id.tv_name);
         TextView tv_current_month_time = view.findViewById(R.id.tv_current_month_time);
         final TextView tv_work_time = view.findViewById(R.id.tv_work_time);
-        final TextView tv_month_time_later = view.findViewById(R.id.tv_current_month_time);
+        final TextView tv_month_time_later = view.findViewById(R.id.tv_month_time_later );
 
         view.setMinimumHeight(ScreenUtil.getScreenHeightPix(this) / 10);
         String name = staff.getNumber() + "号 " + staff.getName();

@@ -1,6 +1,7 @@
 package com.baima.massagemanager;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
+import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.interfaces.OnItemListener;
 import com.baima.massagemanager.util.StringUtil;
 
@@ -147,9 +149,27 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                                     for (int i = 0; i < all.size(); i++) {
                                         if (consumeRecord.getTimestampFlag() == all.get(i).getTimestampFlag()) {
                                             all.get(i).delete();
+
+                                            //修改员工时间
+                                            long staffId = consumeRecord.getStaffId();
+                                            List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
+                                            if (staffList.size()>0){
+                                                Staff staff = staffList.get(0);
+                                                double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
+                                            double workTime = consumeRecord.getWorkTime();
+                                            hoursOfCurrentMonth-=workTime;
+                                            staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
+                                            if (hoursOfCurrentMonth==0){
+                                                staff.setToDefault("hoursOfCurrentMonth");
+                                            }
+                                            staff.update(staffId);
+                                             }
+
                                         }
                                     }
                                     consumeRecord.delete();
+                                    MainActivity.staffFragment.refreshListData();
+
                                     //修改顾客 剩余时间
                                     long customerId = consumeRecord.getCustomerId();
                                     List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);

@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.util.PersonUtil;
 import com.baima.massagemanager.util.StringUtil;
 
 import org.litepal.LitePal;
@@ -21,7 +22,7 @@ import org.litepal.LitePal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener {
+public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener, StaffRecordAdapter.OnItemDeleteListener {
 
     private static final int ALTER_NUMBER = 5;
     private static final int ALTER_NAME = 6;
@@ -138,6 +139,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
+    @Override
+    public void onItemLongClick(int position) {
+        showDeleteRecordDialog(position);
+    }
+
     private void initViews() {
         tv_delete = findViewById(R.id.tv_delete);
         tv_search = findViewById(R.id.tv_search);
@@ -161,7 +167,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         adapter = new StaffRecordAdapter(this, consumeRecordList);
         rv_staffer_record.setAdapter(adapter);
         refreshListData();
-
+        adapter.setOnItemDeleteListener(this);
         tv_delete.setOnClickListener(this);
 
         tv_number.setOnClickListener(this);
@@ -190,7 +196,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         consumeRecordList.clear();
         consumeRecordList.addAll(
                 LitePal.where("staffId=?", String.valueOf(staffId))
-                        .order("consumeTimestamp").find(ConsumeRecord.class)
+                        .order("consumeTimestamp desc").find(ConsumeRecord.class)
         );
         adapter.notifyDataSetChanged();
     }
@@ -212,6 +218,39 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                     }
                 })
                 .show();
+
+    }
+
+    //删除记录对话框
+    private void showDeleteRecordDialog(final int position) {
+        new AlertDialog.Builder(StaffMessageActivity.this)
+                .setTitle("提示")
+                .setMessage("你确定删除这条记录吗？")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        //从消费记录数据 表删除
+                        ConsumeRecord consumeRecord = consumeRecordList.get(position);
+                        consumeRecord.delete();
+                        //修改员工时间，减少
+                        double workTime = consumeRecord.getWorkTime();
+                        PersonUtil.updateStaffTime(staffId, -workTime);
+
+                        refreshBaseMessage();
+                        consumeRecordList.remove(position);
+                        adapter.notifyDataSetChanged();
+                        setResult(RESULT_OK);
+
+                        //修改顾客 时间
+                        long customerId = consumeRecord.getCustomerId();
+                        PersonUtil.updateCustomerTime(customerId, workTime);
+                        MainActivity.customerFragment.refreshCustomerList();
+                    }
+                })
+                .show();
+
 
     }
 }

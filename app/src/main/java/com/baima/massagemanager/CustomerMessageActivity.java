@@ -109,7 +109,10 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         if (resultCode == RESULT_OK) {
             //设置返回顾客 列表的结果 ，以便刷新 。
             setResult(RESULT_OK);
-            String inputData = data.getStringExtra("inputData");
+            String inputData = "";
+            if (data != null) {
+                inputData = data.getStringExtra("inputData");
+            }
             switch (requestCode) {
                 case ALTER_NUMBER:
                     int number = Integer.valueOf(inputData);

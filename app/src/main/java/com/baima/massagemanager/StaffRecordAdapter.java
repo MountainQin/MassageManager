@@ -14,10 +14,15 @@ import com.baima.massagemanager.util.StringUtil;
 import java.util.Date;
 import java.util.List;
 
-public class StaffRecordAdapter extends RecyclerView.Adapter <StaffRecordAdapter.ViewHolder> {
+public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.ViewHolder> {
 
     private Context context;
     private List<ConsumeRecord> consumeRecordList;
+    private OnItemDeleteListener onItemDeleteListener;
+
+    public void setOnItemDeleteListener(OnItemDeleteListener onItemDeleteListener) {
+        this.onItemDeleteListener = onItemDeleteListener;
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         View view;
@@ -55,25 +60,42 @@ public class StaffRecordAdapter extends RecyclerView.Adapter <StaffRecordAdapter
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ConsumeRecord consumeRecord = consumeRecordList.get(position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        final ConsumeRecord consumeRecord = consumeRecordList.get(position);
         long consumeTimestamp = consumeRecord.getConsumeTimestamp();
         holder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
-        double workTime = consumeRecord.getWorkTime();
-        holder.tv_work_time.setText("工作："+StringUtil.doubleTrans(workTime)+"小时");
+        final double workTime = consumeRecord.getWorkTime();
+        holder.tv_work_time.setText("工作：" + StringUtil.doubleTrans(workTime) + "小时");
         double currentMonthTime = consumeRecord.getCurrentMonthTime();
-        holder.tv_month_time.setText("本月："+StringUtil.doubleTrans(currentMonthTime)+"小时");
+        holder.tv_month_time.setText("本月：" + StringUtil.doubleTrans(currentMonthTime) + "小时");
         holder.tv_customer_name.setText(consumeRecord.getCustomeName());
 //        if (workTime!=consumeRecord.getConsumeTime()) {
-            holder.tv_staff_names.setText(consumeRecord.getStaffName());
+        holder.tv_staff_names.setText(consumeRecord.getStaffName());
 //        }
         holder.tv_remark.setText(consumeRecord.getRemark());
         long timestampFlag = consumeRecord.getTimestampFlag();
         holder.tv_timestamp_flag.setText(String.valueOf(timestampFlag));
+
+        holder.view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (onItemDeleteListener!=null){
+                    onItemDeleteListener.onItemLongClick(position);
+                }
+return true;
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return consumeRecordList.size();
+    }
+
+    public interface  OnItemDeleteListener{
+        /**
+         * 删除项目
+         */
+        public abstract  void onItemLongClick(int position);
     }
 }

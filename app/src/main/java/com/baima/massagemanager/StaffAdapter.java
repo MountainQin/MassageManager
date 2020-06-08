@@ -19,7 +19,7 @@ public class StaffAdapter extends BaseAdapter {
     private Context context;
     private List<Staff> staffList;
     private OnItemListener onItemListener;
-    private final double hourPercentage;
+    public double hourPercentage;
 
     public StaffAdapter(Context context, List<Staff> staffList) {
         this.context = context;
