@@ -24,7 +24,8 @@
         <activity android:name=".EditActivity" />
         <activity android:name=".PickDateTimeActivity" />
         <activity android:name=".StaffMessageActivity" />
-        <activity android:name=".RecordActivity"></activity>
+        <activity android:name=".RecordActivity" />
+        <activity android:name=".PickDateActivity"></activity>
     </application>
 
 </manifest>

@@ -35,6 +35,8 @@ public class PickDateTimeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.item_save) {
             //获取 选择后的毫秒值 返回
+            date_picker.clearFocus();
+            time_picker.clearFocus();
             calendar.set(date_picker.getYear(), date_picker.getMonth(), date_picker.getDayOfMonth(),
                     time_picker.getCurrentHour(), time_picker.getCurrentMinute(), 0);
             calendar.set(Calendar.MILLISECOND, 0);
@@ -51,7 +53,7 @@ public class PickDateTimeActivity extends AppCompatActivity {
         time_picker = findViewById(R.id.time_picker);
 
         Intent intent = getIntent();
-        long timeInMillis = intent.getLongExtra("timeInMillis", System.currentTimeMillis());
+        long timeInMillis = intent.getLongExtra("timeInMillis", 0);
         calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeInMillis);
         date_picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));

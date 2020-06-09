@@ -2,10 +2,12 @@ package com.baima.massagemanager;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.baima.massagemanager.fragment.CustomerFragment;
+import com.baima.massagemanager.fragment.RecordFragment;
 import com.baima.massagemanager.fragment.StaffFragment;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Fragment> fragmentList;
     public static StaffFragment staffFragment;
     public static CustomerFragment customerFragment;
+    private RecordFragment recordFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +32,11 @@ public class MainActivity extends AppCompatActivity {
         fragmentList.add(customerFragment);
         staffFragment = new StaffFragment();
         fragmentList.add(staffFragment);
+        recordFragment = new RecordFragment();
+        fragmentList.add(recordFragment);
+
         MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
     }
+
 }

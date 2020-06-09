@@ -17,7 +17,7 @@ import java.util.List;
 public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.ViewHolder> {
 
     private Context context;
-    private List<ConsumeRecord> consumeRecordList;
+    public List<ConsumeRecord> consumeRecordList;
     private OnItemDeleteListener onItemDeleteListener;
 
     public void setOnItemDeleteListener(OnItemDeleteListener onItemDeleteListener) {
@@ -60,7 +60,7 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         final ConsumeRecord consumeRecord = consumeRecordList.get(position);
         long consumeTimestamp = consumeRecord.getConsumeTimestamp();
         holder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
@@ -81,6 +81,7 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
             public boolean onLongClick(View v) {
                 if (onItemDeleteListener!=null){
                     onItemDeleteListener.onItemLongClick(position);
+
                 }
 return true;
             }
