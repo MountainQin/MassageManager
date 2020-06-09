@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_margin="5dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecordActivity">
+
+    <TextView
+android:id="@+id/tv_name"
+        android:text="姓名"
+        style="@style/ViewBaseStyle"/>
+    <TextView
+        android:text="普通 顾客 "
+        style="@style/ViewBaseStyle"/>
+    <EditText
+android:id="@+id/et_customer_name"
+        android:hint="请在此处输入普通 顾客 姓名，可不填"
+        style="@style/ViewBaseStyle"/>
+
+        <LinearLayout
+        style="@style/ViewBaseStyle">
+            <TextView
+android:text="员工时间："
+                android:focusable="true"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+            <TextView
+android:id="@+id/tv_current_month_time"
+                android:focusable="true"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+            <TextView
+android:id="@+id/tv_work_time"
+                android:focusable="true"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+            <TextView
+android:id="@+id/tv_current_month_time_later"
+                android:focusable="true"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_date_time"
+        style="@style/ViewBaseStyle"/>
+    <TextView
+        android:text="备注"
+        style="@style/ViewBaseStyle"/>
+    <EditText
+        android:id="@+id/et_remark"
+        android:hint="请在此处输入备注"
+        style="@style/ViewBaseStyle"/>
+</LinearLayout>

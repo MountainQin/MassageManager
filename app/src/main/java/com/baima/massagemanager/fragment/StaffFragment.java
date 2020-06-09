@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.baima.massagemanager.AddCustomerStaffActivity;
 import com.baima.massagemanager.EditActivity;
 import com.baima.massagemanager.R;
+import com.baima.massagemanager.RecordActivity;
 import com.baima.massagemanager.StaffAdapter;
 import com.baima.massagemanager.StaffMessageActivity;
 import com.baima.massagemanager.entity.Staff;
@@ -32,11 +33,12 @@ import org.litepal.LitePal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaffFragment extends Fragment implements View.OnClickListener, StaffAdapter.OnItemListener, TextWatcher, AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener {
+public class StaffFragment extends Fragment implements View.OnClickListener, TextWatcher, AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener, StaffAdapter.OnRecordClickListener {
 
     private static final int ADD = 1;
     private static final int ALTER_HOUR_PERCENTAGE = 2;
     private static final int STAFF_MESSAGE = 3;
+    private static final int RRECORD = 4;
 
     private List<Staff> staffList = new ArrayList<>();
     private SharedPreferences sharedPreferences;
@@ -66,7 +68,7 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
         lv_staff.setAdapter(adapter);
         refreshListData();
 
-        adapter.setOnItemListener(this);
+        adapter.setOnRecordClickListener(this);
         et_search.addTextChangedListener(this);
         tv_clear.setOnClickListener(this);
         tv_add.setOnClickListener(this);
@@ -88,6 +90,14 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
         //列表框项目的长按，弹出 删除对话框
         showDeleteStaffDialog(position);
         return true;
+    }
+
+    @Override
+    public void onRecordClick(int position) {
+        Intent intent = new Intent(getActivity(), RecordActivity.class);
+        long staffId = staffList.get(position).getId();
+        intent.putExtra("staffId", staffId);
+        startActivityForResult(intent, RRECORD);
     }
 
     @Override
@@ -168,7 +178,7 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
                     //修改小时提成,刷新 列表的数据
                     hourPercentage = Double.valueOf(data.getStringExtra("inputData"));
                     tv_hour_percentage.setText("提成：" + StringUtil.doubleTrans(hourPercentage, true));
-                    adapter.hourPercentage=hourPercentage;
+                    adapter.hourPercentage = hourPercentage;
                     adapter.notifyDataSetChanged();
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     edit.putFloat("hourPercentage", (float) hourPercentage);
@@ -177,15 +187,11 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Sta
                 }
         }
 
-        if (resultCode==getActivity().RESULT_OK){
+        if (resultCode == getActivity().RESULT_OK) {
             refreshListData();
         }
     }
 
-    @Override
-    public void onRecordClick(long staffId) {
-//列表项目的组件 点击 事件
-    }
 
     //刷新列表
     public void refreshListData() {

@@ -24,6 +24,7 @@ import java.util.List;
 
 public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener, StaffRecordAdapter.OnItemDeleteListener {
 
+    private static final int RECORD = 3;
     private static final int ALTER_NUMBER = 5;
     private static final int ALTER_NAME = 6;
     private static final int ALTER_PHONE_NUMBER = 7;
@@ -63,6 +64,12 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
             case R.id.tv_delete:
                 showDeleteStaffDialog();
                 break;
+            case R.id.tv_record:
+                //打开记钟界面
+                Intent intent = new Intent(this, RecordActivity.class);
+                intent.putExtra("staffId",staffId);
+                startActivityForResult(intent,RECORD);
+                break;
 
             case R.id.tv_number:
                 editActivityIntent = new Intent(this, EditActivity.class);
@@ -96,11 +103,13 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            setResult(RESULT_OK);
-            ;
+            setResult(RESULT_OK,getIntent());
+
+//            refreshListData();在后面
+            //刷新 基本信息
             String inputData = data.getStringExtra("inputData");
             switch (requestCode) {
-                case ALTER_NUMBER:
+                                case ALTER_NUMBER:
                     int number = Integer.valueOf(inputData);
                     if (number == 0) {
                         startActivityForResult(data, ALTER_NUMBER);
@@ -134,8 +143,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                     staff.update(staff.getId());
                     refreshBaseMessage();
                     return;
-
             }
+
+                    //刷新 基本信息和列表
+            refreshBaseMessage();
+                refreshListData();
         }
     }
 
@@ -169,6 +181,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         refreshListData();
         adapter.setOnItemDeleteListener(this);
         tv_delete.setOnClickListener(this);
+        tv_record.setOnClickListener(this);
 
         tv_number.setOnClickListener(this);
         tv_name.setOnClickListener(this);

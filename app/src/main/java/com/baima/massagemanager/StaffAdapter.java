@@ -18,7 +18,7 @@ public class StaffAdapter extends BaseAdapter {
 
     private Context context;
     private List<Staff> staffList;
-    private OnItemListener onItemListener;
+    private OnRecordClickListener onRecordClickListener;
     public double hourPercentage;
 
     public StaffAdapter(Context context, List<Staff> staffList) {
@@ -28,8 +28,8 @@ public class StaffAdapter extends BaseAdapter {
         hourPercentage = defaultSharedPreferences.getFloat("hourPercentage", 0);
     }
 
-    public void setOnItemListener(OnItemListener onItemListener) {
-        this.onItemListener = onItemListener;
+    public void setOnRecordClickListener(OnRecordClickListener onRecordClickListener) {
+        this.onRecordClickListener = onRecordClickListener;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class StaffAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_staff, parent, false);
@@ -71,10 +71,13 @@ public class StaffAdapter extends BaseAdapter {
         holder.tv_current_month_time.setText("本月：" + currentMonthTimeStr + "小时");
         String amountStr = StringUtil.doubleTrans(hourPercentage * currentMonthTime, true);
         holder.tv_current_month_amount.setText("合计：" + amountStr);
+        //组件 点击 事件
         holder.tv_record.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onItemListener.onRecordClick(staff.getId());
+                if (onRecordClickListener != null) {
+                    onRecordClickListener.onRecordClick(position);
+                }
             }
         });
         return convertView;
@@ -89,14 +92,14 @@ public class StaffAdapter extends BaseAdapter {
     }
 
     /**
-     * 项目的监听器
+     * 项目里的组件的监听
      */
-    public interface OnItemListener {
+    public interface OnRecordClickListener {
         /**
-         * 记钟的点击
+         * 项目里的组件 点击
          *
-         * @param staffId
+         * @param position 项目的位置
          */
-        public abstract void onRecordClick(long staffId);
+        public abstract void onRecordClick(int position);
     }
 }
