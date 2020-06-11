@@ -68,7 +68,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
                 intent.putExtra("customerId", customerId);
                 startActivityForResult(intent, RECHARGE);
                 break;
-            case R.id.tv_record:
+            case R.id.tv_consume:
                 //消费
                 Intent intent1 = new Intent(CustomerMessageActivity.this, ConsumeActivity.class);
                 intent1.putExtra("customerId", customerId);
@@ -151,6 +151,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
             }
 
             //刷新 顾客信息，
+            refreshBaseMessage();
             refreshRecordList();
         }
     }
@@ -159,7 +160,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         TextView tv_delete = (TextView) findViewById(R.id.tv_delete);
         TextView tv_search = findViewById(R.id.tv_search);
         TextView tv_recharge = findViewById(R.id.tv_recharge);
-        TextView tv_consume = findViewById(R.id.tv_record);
+        TextView tv_consume = findViewById(R.id.tv_consume);
 
         tv_number = findViewById(R.id.tv_number);
         tv_name = findViewById(R.id.tv_name);

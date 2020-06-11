@@ -64,11 +64,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
             case R.id.tv_delete:
                 showDeleteStaffDialog();
                 break;
-            case R.id.tv_record:
+            case R.id.tv_consume:
                 //打开记钟界面
                 Intent intent = new Intent(this, RecordActivity.class);
-                intent.putExtra("staffId",staffId);
-                startActivityForResult(intent,RECORD);
+                intent.putExtra("staffId", staffId);
+                startActivityForResult(intent, RECORD);
                 break;
 
             case R.id.tv_number:
@@ -103,13 +103,13 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            setResult(RESULT_OK,getIntent());
+            setResult(RESULT_OK, getIntent());
 
 //            refreshListData();在后面
             //刷新 基本信息
             String inputData = data.getStringExtra("inputData");
             switch (requestCode) {
-                                case ALTER_NUMBER:
+                case ALTER_NUMBER:
                     int number = Integer.valueOf(inputData);
                     if (number == 0) {
                         startActivityForResult(data, ALTER_NUMBER);
@@ -145,9 +145,9 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                     return;
             }
 
-                    //刷新 基本信息和列表
+            //刷新 基本信息和列表
             refreshBaseMessage();
-                refreshListData();
+            refreshListData();
         }
     }
 
@@ -159,7 +159,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     private void initViews() {
         tv_delete = findViewById(R.id.tv_delete);
         tv_search = findViewById(R.id.tv_search);
-        tv_record = findViewById(R.id.tv_record);
+        tv_record = findViewById(R.id.tv_consume);
 
         tv_number = findViewById(R.id.tv_number);
         tv_name = findViewById(R.id.tv_name);
@@ -260,6 +260,8 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                         long customerId = consumeRecord.getCustomerId();
                         PersonUtil.updateCustomerTime(customerId, workTime);
                         MainActivity.customerFragment.refreshCustomerList();
+                        //刷新 记录列表
+                        MainActivity.recordFragment.removeConsumeRecord(consumeRecord);
                     }
                 })
                 .show();

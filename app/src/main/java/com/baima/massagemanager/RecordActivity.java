@@ -183,6 +183,9 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
         }
         staff.update(staff.getId());
 
+        //刷新记录列表
+        MainActivity.recordFragment.refreshListData();
+
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK, getIntent());
         finish();

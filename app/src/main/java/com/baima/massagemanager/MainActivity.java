@@ -15,11 +15,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ViewPager viewPager;
-    private List<Fragment> fragmentList;
     public static StaffFragment staffFragment;
     public static CustomerFragment customerFragment;
-    private RecordFragment recordFragment;
+    public static RecordFragment recordFragment;
+
+    private ViewPager viewPager;
+    private List<Fragment> fragmentList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

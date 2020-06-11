@@ -62,7 +62,7 @@ public abstract class CustomerAdapter extends BaseAdapter {
             holder.tv_name = convertView.findViewById(R.id.tv_name);
             holder.tv_remainder = convertView.findViewById(R.id.tv_current_month_time);
             holder.tv_recharge = convertView.findViewById(R.id.tv_recharge);
-            holder.tv_consume = convertView.findViewById(R.id.tv_record);
+            holder.tv_consume = convertView.findViewById(R.id.tv_consume);
             holder.tv_remark = convertView.findViewById(R.id.tv_remark);
             convertView.setTag(holder);
         } else {

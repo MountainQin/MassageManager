@@ -57,7 +57,7 @@ public class StaffAdapter extends BaseAdapter {
             holder.tv_name = convertView.findViewById(R.id.tv_name);
             holder.tv_current_month_time = convertView.findViewById(R.id.tv_current_month_time);
             holder.tv_current_month_amount = convertView.findViewById(R.id.tv_current_month_amount);
-            holder.tv_record = convertView.findViewById(R.id.tv_record);
+            holder.tv_record = convertView.findViewById(R.id.tv_consume);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();

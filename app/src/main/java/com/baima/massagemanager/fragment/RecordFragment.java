@@ -11,10 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.baima.massagemanager.OnLoadMoreListener;
+import com.baima.massagemanager.PickDateActivity;
 import com.baima.massagemanager.R;
 import com.baima.massagemanager.RecordAdapter;
-import com.baima.massagemanager.PickDateActivity;
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.util.CalendarUtil;
 import com.baima.massagemanager.util.ConsumeRecordUtil;
@@ -39,6 +41,8 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
     private Calendar calendar;
     private long startTimeInMillis;
     private long endTimeInMillis;
+    private int y;
+    private boolean isInitData;
 
     @Nullable
     @Override
@@ -56,6 +60,18 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
 
 
         tv_date.setOnClickListener(this);
+        rv_record.setOnScrollListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore(int lastPosition) {
+                loadLeast20();
+                refreshTvDate();
+                //往前一毫秒
+                calendar.setTimeInMillis(startTimeInMillis - 1);
+                if (calendar.get(Calendar.YEAR) < 2020) {
+                    Toast.makeText(getActivity(), "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         return view;
     }
 
@@ -82,6 +98,28 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    //移除消费记录
+    public void removeConsumeRecord(ConsumeRecord consumeRecord) {
+        for (int i = 0; i < consumeRecordList.size(); i++) {
+            if (consumeRecord.getId() == consumeRecordList.get(i).getId()) {
+                consumeRecordList.remove(i);
+                adapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    //刷新 列表数据
+    public void refreshListData() {
+        consumeRecordList.clear();
+        consumeRecordList.addAll(
+                LitePal.where("consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                        .order("consumeTimestamp desc").find(ConsumeRecord.class)
+        );
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
 
     //根据指定起始时间戳刷新 列表数据
     private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
@@ -91,6 +129,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
                         .order("consumeTimestamp desc").find(ConsumeRecord.class)
         );
         adapter.notifyDataSetChanged();
+        rv_record.scrollToPosition(0);
     }
 
 
@@ -119,16 +158,22 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         startTimeInMillis = calendar.getTimeInMillis();
         endTimeInMillis = calendar.getTimeInMillis();
+        loadLeast20();
+    }
 
-        while (consumeRecordList.size() < 50) {
-            //如果 项目数小于50，再往前 一天查找 ，一直到20200101，
+    //往前一天加载，至少20
+    private void loadLeast20() {
+        List<ConsumeRecord> list = new ArrayList<>();
+        calendar.setTimeInMillis(startTimeInMillis);
+        while (list.size() < 20) {
             calendar.add(Calendar.DAY_OF_MONTH, -1);
             if (calendar.get(Calendar.YEAR) < 2020) {
                 break;
             }
-            consumeRecordList.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis));
+            list.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis));
             startTimeInMillis = calendar.getTimeInMillis();
         }
+        consumeRecordList.addAll(list);
         adapter.notifyDataSetChanged();
     }
 }

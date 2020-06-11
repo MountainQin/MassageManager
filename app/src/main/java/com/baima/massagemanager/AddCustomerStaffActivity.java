@@ -113,6 +113,7 @@ public class AddCustomerStaffActivity extends AppCompatActivity implements View.
         } else if (type == ADD_STAFF) {
             //如果 是添加员工
             number = PersonUtil.getNewNumber(Staff.class);
+            tv_date_time.setVisibility(View.GONE);
         }
         ed_number.setText(String.valueOf(number));
 

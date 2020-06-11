@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.util.StringUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -64,6 +65,16 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
         final ConsumeRecord consumeRecord = consumeRecordList.get(position);
         long consumeTimestamp = consumeRecord.getConsumeTimestamp();
         holder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
+        //如果 是1日，背景设置为蓝色
+        holder.view.setBackground(null);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(consumeTimestamp);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        if (day == 1) {
+            holder.view.setBackgroundColor(0x880000FF);
+        }
+
+
         final double workTime = consumeRecord.getWorkTime();
         holder.tv_work_time.setText("工作：" + StringUtil.doubleTrans(workTime) + "小时");
         double currentMonthTime = consumeRecord.getCurrentMonthTime();

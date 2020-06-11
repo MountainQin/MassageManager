@@ -153,22 +153,25 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                                             //修改员工时间
                                             long staffId = consumeRecord.getStaffId();
                                             List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
-                                            if (staffList.size()>0){
+                                            if (staffList.size() > 0) {
                                                 Staff staff = staffList.get(0);
                                                 double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
-                                            double workTime = consumeRecord.getWorkTime();
-                                            hoursOfCurrentMonth-=workTime;
-                                            staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
-                                            if (hoursOfCurrentMonth==0){
-                                                staff.setToDefault("hoursOfCurrentMonth");
+                                                double workTime = consumeRecord.getWorkTime();
+                                                hoursOfCurrentMonth -= workTime;
+                                                staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
+                                                if (hoursOfCurrentMonth == 0) {
+                                                    staff.setToDefault("hoursOfCurrentMonth");
+                                                }
+                                                staff.update(staffId);
                                             }
-                                            staff.update(staffId);
-                                             }
 
                                         }
                                     }
                                     consumeRecord.delete();
+
+                                    //刷新员工列表记录列表
                                     MainActivity.staffFragment.refreshListData();
+                                    MainActivity.recordFragment.refreshListData();
 
                                     //修改顾客 剩余时间
                                     long customerId = consumeRecord.getCustomerId();

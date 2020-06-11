@@ -229,12 +229,17 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             ContentValues contentValues = new ContentValues();
             contentValues.put("hoursOfCurrentMonth", currentMonthTime);
             LitePal.update(Staff.class, contentValues, staffId);
-            //通知员工列表
-                        MainActivity.staffFragment.refreshListData();
         }
+
+            //通知员工列表记录列表
+                        MainActivity.staffFragment.refreshListData();
+        MainActivity.recordFragment.refreshListData();
 
         //保存顾客 表的数据
         customer.setRemainder(remainderLater);
+        if (remainderLater==0){
+            customer.setToDefault("remainder");
+        }
         customer.update(customer.getId());
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);

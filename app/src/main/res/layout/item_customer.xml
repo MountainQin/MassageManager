@@ -5,7 +5,7 @@
     android:layout_margin="10dp">
 
     <TextView
-        android:id="@+id/tv_record"
+        android:id="@+id/tv_consume"
         android:text="消费"
         android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
@@ -16,7 +16,7 @@
         android:id="@+id/tv_recharge"
         android:text="充值"
         android:layout_centerVertical="true"
-        android:layout_toLeftOf="@+id/tv_record"
+        android:layout_toLeftOf="@+id/tv_consume"
         android:layout_width="40dp"
         android:layout_height="match_parent" />
 
