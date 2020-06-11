@@ -9,57 +9,47 @@
 
     <TextView
         android:id="@+id/tv_number_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <TextView
         android:id="@+id/tv_recharge_amount"
         android:text="充值金额"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <EditText
         android:id="@+id/et_recharge_amount"
         android:inputType="number|numberDecimal"
         android:hint="请输入充值金额"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <TextView
         android:text="充值小时数"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <EditText
         android:id="@+id/et_recharge_hour"
         android:inputType="number|numberDecimal"
         android:hint="请输入小时数"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <TextView
         android:text="剩余"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
     <EditText
         android:id="@+id/et_remainder"
         android:hint="请输入剩余小时"
         android:inputType="number|numberDecimal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <TextView
         android:id="@+id/tv_date_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
     <TextView
         android:text="备注"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 
     <EditText
         android:id="@+id/et_remark"
         android:hint="请输入备注"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+style="@style/ViewBaseStyle" />
 </LinearLayout>

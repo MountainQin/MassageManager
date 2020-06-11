@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerFragment extends Fragment {
+
+    private static final String TAG = "CustomerFragment";
 
     private static final int ADD = 1;
     private static final int MESSAGE = 2;

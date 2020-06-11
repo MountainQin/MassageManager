@@ -27,6 +27,8 @@ import java.util.List;
 
 public class RechargeActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher {
 
+    private static final String TAG = "RechargeActivity";
+
     private static final int DATE_TIME = 1;
     private static final int ALTER_HOUR_PRICE = 2;
     private EditText et_remark;
@@ -108,7 +110,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
                     tv_date_time.setText(new Date(timeInMillis).toLocaleString());
                     break;
                 case ALTER_HOUR_PRICE:
-                    hourPrice = data.getDoubleExtra("aDouble", hourPrice);
+                    hourPrice = data.getDoubleExtra("inputData", hourPrice);
                     tv_recharge_amount.setText("充值金额(" + StringUtil.doubleTrans(hourPrice, true) + "元=1小时)");
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     edit.putFloat("hourPrice", (float) hourPrice);
@@ -128,7 +130,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.item_save:
-                saveRechargeRecord();
+                saveData();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -171,7 +173,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
     }
 
     //保存充值记录
-    private void saveRechargeRecord() {
+    private void saveData() {
         try {
             //获取 编辑框内容
             double rechargeAmount = Double.valueOf(et_recharge_amount.getText().toString().trim());
@@ -179,6 +181,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
             double remainder = Double.valueOf(et_remainder.getText().toString());
             String remark = et_remark.getText().toString().trim();
 
+            //设置顾客 剩余时间
             customer.setRemainder(remainder);
             if (remainder == 0) {
                 customer.setToDefault("remainder");

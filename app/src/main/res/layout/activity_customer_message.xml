@@ -56,7 +56,7 @@
                 android:id="@+id/tv_number"
                 android:text="number"
                 android:layout_width="match_parent"
-                android:layout_height="40dp" />
+                    android:layout_height="40dp" />
 
             <TextView
                 android:id="@+id/tv_name"
