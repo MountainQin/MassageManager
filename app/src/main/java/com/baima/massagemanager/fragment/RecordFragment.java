@@ -31,7 +31,7 @@ import java.util.List;
 
 public class RecordFragment extends Fragment implements View.OnClickListener {
 
-    private static final int SELECT_DATE = 1;
+    private static final int PICK_DATE = 1;
 
 
     private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
@@ -63,7 +63,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         rv_record.setOnScrollListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore(int lastPosition) {
-                loadLeast20();
+                loadMoreLeast20();
                 refreshTvDate();
                 //往前一毫秒
                 calendar.setTimeInMillis(startTimeInMillis - 1);
@@ -80,7 +80,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         Intent intent = new Intent(getActivity(), PickDateActivity.class);
         intent.putExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
         intent.putExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
-        startActivityForResult(intent, SELECT_DATE);
+        startActivityForResult(intent, PICK_DATE);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == getActivity().RESULT_OK) {
             switch (requestCode) {
-                case SELECT_DATE:
+                case PICK_DATE:
                     startTimeInMillis = data.getLongExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
                     endTimeInMillis = data.getLongExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
                     refreshListData(startTimeInMillis, endTimeInMillis);
@@ -124,10 +124,9 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
     //根据指定起始时间戳刷新 列表数据
     private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
         consumeRecordList.clear();
-        consumeRecordList.addAll(
-                LitePal.where("consumeTimestamp >=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                        .order("consumeTimestamp desc").find(ConsumeRecord.class)
-        );
+        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(ConsumeRecord.class);
+        this.consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
         adapter.notifyDataSetChanged();
         rv_record.scrollToPosition(0);
     }
@@ -158,11 +157,11 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         startTimeInMillis = calendar.getTimeInMillis();
         endTimeInMillis = calendar.getTimeInMillis();
-        loadLeast20();
+        loadMoreLeast20();
     }
 
     //往前一天加载，至少20
-    private void loadLeast20() {
+    private void loadMoreLeast20() {
         List<ConsumeRecord> list = new ArrayList<>();
         calendar.setTimeInMillis(startTimeInMillis);
         while (list.size() < 20) {

@@ -3,26 +3,34 @@ package com.baima.massagemanager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.util.CalendarUtil;
+import com.baima.massagemanager.util.ConsumeRecordUtil;
 import com.baima.massagemanager.util.PersonUtil;
 import com.baima.massagemanager.util.StringUtil;
+import com.github.jdsjlzx.interfaces.OnItemLongClickListener;
+import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
+import com.github.jdsjlzx.recyclerview.LRecyclerView;
+import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 
 import org.litepal.LitePal;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener, StaffRecordAdapter.OnItemDeleteListener {
+public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener, OnItemLongClickListener, OnLoadMoreListener {
 
     private static final int RECORD = 3;
     private static final int ALTER_NUMBER = 5;
@@ -30,10 +38,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     private static final int ALTER_PHONE_NUMBER = 7;
     private static final int ALTER_CURRENT_MONTH_TIME = 8;
     private static final int ALTER_REMARK = 9;
+    private static final int PICK_DATE = 10;
 
     private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
     private TextView tv_delete;
-    private RecyclerView rv_staffer_record;
+    private LRecyclerView lrv_staffer_record;
     private TextView tv_search;
     private TextView tv_record;
     private TextView tv_number;
@@ -46,6 +55,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     private StaffRecordAdapter adapter;
     private long staffId;
     private Staff staff;
+    private LRecyclerViewAdapter lRecyclerViewAdapter;
+    private TextView tv_date;
+    private Calendar calendar;
+    private long startTimeInMillis;
+    private long endTimeInMillis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +68,24 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         setContentView(R.layout.activity_staff_message);
 
         initViews();
+    }
+
+    @Override
+    public void onItemLongClick(View view, int position) {
+        showDeleteRecordDialog(position);
+    }
+
+    @Override
+    public void onLoadMore() {
+        loadMoreLeast20();
+        lrv_staffer_record.refreshComplete(0);
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) lrv_staffer_record.getLayoutManager();
+        if (layoutManager.findLastCompletelyVisibleItemPosition() == layoutManager.getItemCount() - 1) {
+            Toast.makeText(this, "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
+        }
+
+        refreshTvDate();
     }
 
     @Override
@@ -96,6 +128,12 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                 editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
                 startActivityForResult(editActivityIntent, ALTER_REMARK);
                 break;
+            case R.id.tv_date:
+                intent = new Intent(this, PickDateActivity.class);
+                intent.putExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
+                intent.putExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
+                startActivityForResult(intent, PICK_DATE);
+                break;
         }
     }
 
@@ -109,6 +147,12 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
             //刷新 基本信息
             String inputData = data.getStringExtra("inputData");
             switch (requestCode) {
+                case PICK_DATE:
+                    startTimeInMillis = data.getLongExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
+                    endTimeInMillis = data.getLongExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
+                    refreshTvDate();
+                    break;
+
                 case ALTER_NUMBER:
                     int number = Integer.valueOf(inputData);
                     if (number == 0) {
@@ -147,14 +191,11 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
 
             //刷新 基本信息和列表
             refreshBaseMessage();
-            refreshListData();
+            refreshListData(startTimeInMillis, endTimeInMillis);
+
         }
     }
 
-    @Override
-    public void onItemLongClick(int position) {
-        showDeleteRecordDialog(position);
-    }
 
     private void initViews() {
         tv_delete = findViewById(R.id.tv_delete);
@@ -168,18 +209,23 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         tv_sms = findViewById(R.id.tv_sms);
         tv_current_month_time = findViewById(R.id.tv_current_month_time);
         tv_remark = findViewById(R.id.tv_remark);
-        rv_staffer_record = findViewById(R.id.rv_staffer_record);
+        tv_date = findViewById(R.id.tv_date);
+        lrv_staffer_record = findViewById(R.id.lrv_staffer_record);
 
         Intent intent = getIntent();
         staffId = intent.getLongExtra("staffId", 0);
         refreshBaseMessage();
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        rv_staffer_record.setLayoutManager(linearLayoutManager);
+        lrv_staffer_record.setLayoutManager(linearLayoutManager);
         adapter = new StaffRecordAdapter(this, consumeRecordList);
-        rv_staffer_record.setAdapter(adapter);
-        refreshListData();
-        adapter.setOnItemDeleteListener(this);
+        lRecyclerViewAdapter = new LRecyclerViewAdapter(adapter);
+        lrv_staffer_record.setAdapter(lRecyclerViewAdapter);
+
+        initData();
+        loadMoreLeast20();
+        refreshTvDate();
+
         tv_delete.setOnClickListener(this);
         tv_record.setOnClickListener(this);
 
@@ -188,6 +234,10 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         tv_phone_number.setOnClickListener(this);
         tv_current_month_time.setOnClickListener(this);
         tv_remark.setOnClickListener(this);
+        tv_date.setOnClickListener(this);
+
+        lrv_staffer_record.setOnLoadMoreListener(this);
+        lRecyclerViewAdapter.setOnItemLongClickListener(this);
     }
 
     //刷新 基本信息
@@ -207,10 +257,9 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     //刷新 列表数据
     private void refreshListData() {
         consumeRecordList.clear();
-        consumeRecordList.addAll(
-                LitePal.where("staffId=?", String.valueOf(staffId))
-                        .order("consumeTimestamp desc").find(ConsumeRecord.class)
-        );
+        List<ConsumeRecord> list = LitePal.where("staffId=?", String.valueOf(staffId))
+                .order("id desc").find(ConsumeRecord.class);
+        consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
         adapter.notifyDataSetChanged();
     }
 
@@ -267,5 +316,50 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                 .show();
 
 
+    }
+
+    //初始化数据
+    private void initData() {
+        calendar = Calendar.getInstance();
+        //小时分钟秒毫秒清零
+        CalendarUtil.setTimeTo0(calendar);
+//           startTimeInMillis = calendar.getTimeInMillis();
+//往后一天
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        startTimeInMillis = calendar.getTimeInMillis();
+        endTimeInMillis = calendar.getTimeInMillis();
+    }
+
+    //往前一天加载，至少20
+    private void loadMoreLeast20() {
+        List<ConsumeRecord> list = new ArrayList<>();
+        calendar.setTimeInMillis(startTimeInMillis);
+        while (list.size() < 20) {
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+            if (calendar.get(Calendar.YEAR) < 2020) {
+                break;
+            }
+            list.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis, staffId));
+            startTimeInMillis = calendar.getTimeInMillis();
+        }
+        consumeRecordList.addAll(list);
+        adapter.notifyDataSetChanged();
+    }
+
+    //刷新 日期标签
+    private void refreshTvDate() {
+        String s = new Date(startTimeInMillis).toLocaleString();
+        String s1 = new Date(endTimeInMillis).toLocaleString();
+        tv_date.setText(s + " - " + s1);
+    }
+
+
+    //根据指定起始时间戳刷新 列表数据
+    private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
+        consumeRecordList.clear();
+        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<? and staffId=?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis), String.valueOf(staffId))
+                .order("id desc").find(ConsumeRecord.class);
+        consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
+        adapter.notifyDataSetChanged();
     }
 }

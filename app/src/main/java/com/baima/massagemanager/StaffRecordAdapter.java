@@ -19,11 +19,7 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
 
     private Context context;
     public List<ConsumeRecord> consumeRecordList;
-    private OnItemDeleteListener onItemDeleteListener;
 
-    public void setOnItemDeleteListener(OnItemDeleteListener onItemDeleteListener) {
-        this.onItemDeleteListener = onItemDeleteListener;
-    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         View view;
@@ -86,28 +82,10 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
         holder.tv_remark.setText(consumeRecord.getRemark());
         long timestampFlag = consumeRecord.getTimestampFlag();
         holder.tv_timestamp_flag.setText(String.valueOf(timestampFlag));
-
-        holder.view.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (onItemDeleteListener!=null){
-                    onItemDeleteListener.onItemLongClick(position);
-
-                }
-return true;
-            }
-        });
     }
 
     @Override
     public int getItemCount() {
         return consumeRecordList.size();
-    }
-
-    public interface  OnItemDeleteListener{
-        /**
-         * 删除项目
-         */
-        public abstract  void onItemLongClick(int position);
     }
 }

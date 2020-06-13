@@ -112,18 +112,17 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             double aDouble = 0;
-            if (data != null) {
-                aDouble = Double.valueOf(data.getStringExtra("inputData"));
-            }
             switch (requestCode) {
                 case MONTH_TIME_LATER:
                     //修改标签内容，修改消费记录的员工时间
+                    aDouble = Double.valueOf(data.getStringExtra("inputData"));
                     int childId = data.getIntExtra("childId", 0);
                     consumeRecordList.get(childId).setCurrentMonthTime(aDouble);
                     LinearLayout layoutStaffChild = (LinearLayout) layout_staff.getChildAt(childId);
                     ((TextView) layoutStaffChild.getChildAt(3)).setText("= " + StringUtil.doubleTrans(aDouble));
                     break;
                 case CONSUME_TIME:
+                    aDouble = Double.valueOf(data.getStringExtra("inputData"));
                     tv_consume_time.setText("-" + StringUtil.doubleTrans(aDouble) + "小时");
                     consumeTime = aDouble;
                     remainderLater = customer.getRemainder() - consumeTime;
@@ -134,6 +133,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     tv_date_time.setText(new Date(timeMillis).toLocaleString());
                     break;
                 case REMAINDER_LATER:
+                    aDouble = Double.valueOf(data.getStringExtra("inputData"));
                     tv_remainder_later.setText("= " + StringUtil.doubleTrans(aDouble));
                     remainderLater = aDouble;
                     break;
@@ -231,13 +231,13 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             LitePal.update(Staff.class, contentValues, staffId);
         }
 
-            //通知员工列表记录列表
-                        MainActivity.staffFragment.refreshListData();
+        //通知员工列表记录列表
+        MainActivity.staffFragment.refreshListData();
         MainActivity.recordFragment.refreshListData();
 
         //保存顾客 表的数据
         customer.setRemainder(remainderLater);
-        if (remainderLater==0){
+        if (remainderLater == 0) {
             customer.setToDefault("remainder");
         }
         customer.update(customer.getId());
@@ -350,7 +350,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         final TextView tv_name = view.findViewById(R.id.tv_name);
         TextView tv_current_month_time = view.findViewById(R.id.tv_current_month_time);
         final TextView tv_work_time = view.findViewById(R.id.tv_work_time);
-        final TextView tv_month_time_later = view.findViewById(R.id.tv_month_time_later );
+        final TextView tv_month_time_later = view.findViewById(R.id.tv_month_time_later);
 
         view.setMinimumHeight(ScreenUtil.getScreenHeightPix(this) / 10);
         String name = staff.getNumber() + "号 " + staff.getName();

@@ -167,7 +167,7 @@ public class CustomerMessageActivity extends AppCompatActivity implements View.O
         tv_phone_number = findViewById(R.id.tv_phone_number);
         tv_remainder = findViewById(R.id.tv_current_month_time);
         tv_remark = findViewById(R.id.tv_remark);
-        rv_customer_record = findViewById(R.id.rv_staffer_record);
+        rv_customer_record = findViewById(R.id.lrv_staffer_record);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rv_customer_record.setLayoutManager(linearLayoutManager);

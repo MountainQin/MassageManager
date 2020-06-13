@@ -12,7 +12,7 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
-            app:layout_scrollFlags="scroll|enterAlways|snap"
+app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
             android:layout_width="match_parent"
             android:layout_height="40dp">
 
@@ -39,7 +39,7 @@
         </LinearLayout>
 
         <LinearLayout
-            app:layout_scrollFlags="scroll|enterAlways|snap"
+            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
             android:orientation="vertical"
             android:layout_marginTop="5dp"
             android:layout_width="match_parent"
@@ -97,14 +97,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_date"
+            style="@style/ViewBaseStyle"/>
+        <TextView
+            android:text="记录列表"
+            android:focusable="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_staffer_record"
+    <com.github.jdsjlzx.recyclerview.LRecyclerView
+        android:id="@+id/lrv_staffer_record"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    </android.support.v7.widget.RecyclerView>
+    </com.github.jdsjlzx.recyclerview.LRecyclerView>
 </android.support.design.widget.CoordinatorLayout>
