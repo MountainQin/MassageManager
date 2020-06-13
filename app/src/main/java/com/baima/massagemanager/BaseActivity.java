@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
+import com.baima.massagemanager.entity.Person;
 import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.util.CalendarUtil;
 import com.baima.massagemanager.util.ConsumeRecordUtil;
@@ -30,8 +32,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class StaffMessageActivity extends AppCompatActivity implements View.OnClickListener, OnItemLongClickListener, OnLoadMoreListener {
+public abstract class BaseActivity<T extends Person, E> extends AppCompatActivity implements View.OnClickListener, OnItemLongClickListener, OnLoadMoreListener {
 
+    public static final String EXTRA_PERSON_ID = "personId";
     private static final int RECORD = 3;
     private static final int ALTER_NUMBER = 5;
     private static final int ALTER_NAME = 6;
@@ -40,7 +43,10 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     private static final int ALTER_REMARK = 9;
     private static final int PICK_DATE = 10;
 
-    private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
+    private Staff staff;
+
+    public List<ConsumeRecord> consumeRecordList = new ArrayList<>();
+
     private TextView tv_delete;
     private LRecyclerView lrv_staffer_record;
     private TextView tv_search;
@@ -52,20 +58,28 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     private TextView tv_sms;
     private TextView tv_current_month_time;
     private TextView tv_remark;
-    private StaffRecordAdapter adapter;
-    private long staffId;
-    private Staff staff;
-    private LRecyclerViewAdapter lRecyclerViewAdapter;
+    public RecyclerView.Adapter adapter;
+    public long staffId;
+    public LRecyclerViewAdapter lRecyclerViewAdapter;
     private TextView tv_date;
-    private Calendar calendar;
-    private long startTimeInMillis;
-    private long endTimeInMillis;
+    public Calendar calendar;
+    public long startTimeInMillis;
+    public long endTimeInMillis;
+    public TextView tv_recharge;
+    public TextView tv_consume;
+    public TextView tv_remainder;
+    public T t;
+    public List<E> dataList=new ArrayList<>();
+
+    public abstract List<T> getTList(long personId);
+    public abstract RecyclerView.Adapter getAdapter(List<E> dataList);
+    public abstract  void loadMoreLeast20();
+    public abstract  void refreshListData(long startTimeInMillis, long endTimeInMillis) ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("员工信息");
-        setContentView(R.layout.activity_staff_message);
+        setContentView(R.layout.activity_message_base);
 
         initViews();
     }
@@ -197,28 +211,40 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     }
 
 
-    private void initViews() {
+    public void initViews() {
         tv_delete = findViewById(R.id.tv_delete);
         tv_search = findViewById(R.id.tv_search);
-        tv_record = findViewById(R.id.tv_consume);
+        tv_recharge = findViewById(R.id.tv_recharge);
+        tv_consume = findViewById(R.id.tv_consume);
+        tv_record = findViewById(R.id.tv_record);
 
         tv_number = findViewById(R.id.tv_number);
         tv_name = findViewById(R.id.tv_name);
         tv_phone_number = findViewById(R.id.tv_phone_number);
         tv_call = findViewById(R.id.tv_call);
         tv_sms = findViewById(R.id.tv_sms);
+        tv_remainder = findViewById(R.id.tv_remainder);
         tv_current_month_time = findViewById(R.id.tv_current_month_time);
         tv_remark = findViewById(R.id.tv_remark);
         tv_date = findViewById(R.id.tv_date);
         lrv_staffer_record = findViewById(R.id.lrv_customer_record);
 
         Intent intent = getIntent();
-        staffId = intent.getLongExtra("staffId", 0);
+        long personId = intent.getLongExtra(EXTRA_PERSON_ID, 0);
+        List<T> tList = getTList(personId);
+
+
+        //如果 没有找到顾客员工，退出
+        if (tList.size() == 0) {
+            finish();
+        }
+
+         t = tList.get(0);
         refreshBaseMessage();
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         lrv_staffer_record.setLayoutManager(linearLayoutManager);
-        adapter = new StaffRecordAdapter(this, consumeRecordList);
+        adapter=getAdapter(dataList);
         lRecyclerViewAdapter = new LRecyclerViewAdapter(adapter);
         lrv_staffer_record.setAdapter(lRecyclerViewAdapter);
 
@@ -240,21 +266,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
         lRecyclerViewAdapter.setOnItemLongClickListener(this);
     }
 
-    //刷新 基本信息
-    private void refreshBaseMessage() {
-        List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
-        if (staffList.size() > 0) {
-            staff = staffList.get(0);
-            tv_number.setText("编号：" + staff.getNumber());
-            tv_name.setText("姓名：" + staff.getName());
-            tv_phone_number.setText("手机号：" + staff.getPhoneNumber());
-            double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
-            tv_current_month_time.setText("本月：" + StringUtil.doubleTrans(hoursOfCurrentMonth) + "小时");
-            tv_remark.setText("备注：" + staff.getRemark());
-        }
-    }
-
-    //刷新 列表数据
+    //    刷新 列表数据
     private void refreshListData() {
         consumeRecordList.clear();
         List<ConsumeRecord> list = LitePal.where("staffId=?", String.valueOf(staffId))
@@ -264,7 +276,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void showDeleteStaffDialog() {
-        String numberName = staff.getNumber() + "号" + staff.getName();
+        String numberName = t.getNumber() + "号" + t.getName();
         String msg = "你确定删除 " + numberName + " 吗？";
         new AlertDialog.Builder(this)
                 .setTitle("提示")
@@ -274,7 +286,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        staff.delete();
+                        t.delete();
                         setResult(RESULT_OK);
                         finish();
                     }
@@ -285,7 +297,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
 
     //删除记录对话框
     private void showDeleteRecordDialog(final int position) {
-        new AlertDialog.Builder(StaffMessageActivity.this)
+        new AlertDialog.Builder(BaseActivity.this)
                 .setTitle("提示")
                 .setMessage("你确定删除这条记录吗？")
                 .setNegativeButton("取消", null)
@@ -331,7 +343,7 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
     }
 
     //往前一天加载，至少20
-    private void loadMoreLeast20() {
+    private void loadMoreLeast201() {
         List<ConsumeRecord> list = new ArrayList<>();
         calendar.setTimeInMillis(startTimeInMillis);
         while (list.size() < 20) {
@@ -355,11 +367,18 @@ public class StaffMessageActivity extends AppCompatActivity implements View.OnCl
 
 
     //根据指定起始时间戳刷新 列表数据
-    private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
+    private void refreshListData1(long startTimeInMillis, long endTimeInMillis) {
         consumeRecordList.clear();
         List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<? and staffId=?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis), String.valueOf(staffId))
                 .order("id desc").find(ConsumeRecord.class);
         consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
         adapter.notifyDataSetChanged();
+    }
+
+    public void refreshBaseMessage() {
+        tv_number.setText("编号：" + t.getNumber());
+        tv_name.setText("姓名：" + t.getName());
+        tv_phone_number.setText("手机号：" + t.getPhoneNumber());
+        tv_remark.setText("备注：" + t.getRemark());
     }
 }

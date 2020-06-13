@@ -12,7 +12,7 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
-            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
+app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
             android:layout_width="match_parent"
             android:layout_height="40dp">
 
@@ -33,6 +33,7 @@
             <TextView
                 android:id="@+id/tv_recharge"
                 android:text="充值"
+                android:visibility="gone"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
@@ -40,9 +41,18 @@
             <TextView
                 android:id="@+id/tv_consume"
                 android:text="消费"
+                android:visibility="gone"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
+            <TextView
+                android:id="@+id/tv_record"
+                android:text="记钟"
+android:visibility="gone"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -56,7 +66,7 @@
                 android:id="@+id/tv_number"
                 android:text="number"
                 android:layout_width="match_parent"
-                    android:layout_height="40dp" />
+                android:layout_height="40dp" />
 
             <TextView
                 android:id="@+id/tv_name"
@@ -91,10 +101,16 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent" />
             </LinearLayout>
+            <TextView
+                android:id="@+id/tv_remainder"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
 
             <TextView
                 android:id="@+id/tv_current_month_time"
-                android:text="remainder"
+                android:text="cmt"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="40dp" />
 
@@ -115,12 +131,12 @@
             android:layout_height="wrap_content" />
     </android.support.design.widget.AppBarLayout>
 
-<com.github.jdsjlzx.recyclerview.LRecyclerView
+    <com.github.jdsjlzx.recyclerview.LRecyclerView
         android:id="@+id/lrv_customer_record"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-</com.github.jdsjlzx.recyclerview.LRecyclerView>
+    </com.github.jdsjlzx.recyclerview.LRecyclerView>
 </android.support.design.widget.CoordinatorLayout>

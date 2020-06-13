@@ -109,7 +109,7 @@ app:layout_scrollFlags="scroll|enterAlwaysCollapsed|snap"
     </android.support.design.widget.AppBarLayout>
 
     <com.github.jdsjlzx.recyclerview.LRecyclerView
-        android:id="@+id/lrv_staffer_record"
+        android:id="@+id/lrv_customer_record"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"

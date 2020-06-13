@@ -1,9 +1,6 @@
 package com.baima.massagemanager;
 
-import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,13 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
-import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
-import com.baima.massagemanager.entity.Staff;
-import com.baima.massagemanager.interfaces.OnItemListener;
 import com.baima.massagemanager.util.StringUtil;
-
-import org.litepal.LitePal;
 
 import java.util.Date;
 import java.util.List;
@@ -29,21 +21,12 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
     private static final int TYPE_RECHARGE_RECORD = 2;
     private Context context;
     private List consumeRechargeRecordList; //消费充值记录的集合
-    private OnItemListener onItemListener;
 
     public CustomerRecordAdapter(Context context, List consumeRechargeRecordList) {
         this.context = context;
         this.consumeRechargeRecordList = consumeRechargeRecordList;
     }
 
-    /**
-     * 项目的监听
-     *
-     * @param onItemListener
-     */
-    public void setOnItemListener(OnItemListener onItemListener) {
-        this.onItemListener = onItemListener;
-    }
 
     //对应充值记录
     class RechargeRecordViewHolder extends RecyclerView.ViewHolder {
@@ -132,73 +115,6 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             consumeRecordViewHolder.tv_staff.setText(consumeRecord.getStaffName());
             consumeRecordViewHolder.tv_remark.setText(consumeRecord.getRemark());
             consumeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
-            //长按弹出删除对话框
-            consumeRecordViewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    new AlertDialog.Builder(context)
-                            .setTitle("提示")
-                            .setMessage("你确定删除这条记录吗？")
-                            .setNegativeButton("取消", null)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    //删除数据 表的数据 ，如果 有相同记录都删除
-                                    List<ConsumeRecord> all = LitePal.findAll(ConsumeRecord.class);
-                                    for (int i = 0; i < all.size(); i++) {
-                                        if (consumeRecord.getTimestampFlag() == all.get(i).getTimestampFlag()) {
-                                            all.get(i).delete();
-
-                                            //修改员工时间
-                                            long staffId = consumeRecord.getStaffId();
-                                            List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
-                                            if (staffList.size() > 0) {
-                                                Staff staff = staffList.get(0);
-                                                double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
-                                                double workTime = consumeRecord.getWorkTime();
-                                                hoursOfCurrentMonth -= workTime;
-                                                staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
-                                                if (hoursOfCurrentMonth == 0) {
-                                                    staff.setToDefault("hoursOfCurrentMonth");
-                                                }
-                                                staff.update(staffId);
-                                            }
-
-                                        }
-                                    }
-                                    consumeRecord.delete();
-
-                                    //刷新员工列表记录列表
-                                    MainActivity.staffFragment.refreshListData();
-                                    MainActivity.recordFragment.refreshListData();
-
-                                    //修改顾客 剩余时间
-                                    long customerId = consumeRecord.getCustomerId();
-                                    List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
-                                    if (customerList.size() > 0) {
-                                        Customer customer = customerList.get(0);
-                                        double remainder = customer.getRemainder() + consumeRecord.getConsumeTime();
-                                        customer.setRemainder(remainder);
-                                        if (remainder == 0) {
-                                            //更新为默认值
-                                            customer.setToDefault("remainder");
-                                        }
-                                        customer.update(customer.getId());
-                                        //修改顾客基本信息
-                                        if (onItemListener != null) {
-                                            onItemListener.dataChange(customer.getRemainder());
-                                        }
-                                    }
-
-                                    consumeRechargeRecordList.remove(position);
-                                    notifyDataSetChanged();
-                                }
-                            })
-                            .show();
-                    return true;
-                }
-            });
         } else if (o instanceof RechargeRecord) {
             //充值
             RechargeRecordViewHolder rechargeRecordViewHolder = (RechargeRecordViewHolder) holder;
@@ -213,47 +129,6 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                     StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
             rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
             rechargeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(rechargeRecord.getTimestampFlag()));
-            //长按弹出删除对话框
-            rechargeRecordViewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    new AlertDialog.Builder(context)
-                            .setTitle("提示")
-                            .setMessage("你确定删除这条记录吗？")
-                            .setNegativeButton("取消", null)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    //从数据 表删除
-                                    LitePal.delete(RechargeRecord.class, rechargeRecord.getId());
-
-//修改顾客表数据
-                                    long customerId = rechargeRecord.getCustomerId();
-                                    List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
-                                    if (customerList.size() > 0) {
-                                        Customer customer = customerList.get(0);
-                                        double remainder = customer.getRemainder() - rechargeRecord.getRechargeHour();
-                                        customer.setRemainder(remainder);
-                                        if (remainder == 0) {
-                                            //更新为默认值
-                                            customer.setToDefault("remainder");
-                                        }
-                                        customer.update(customer.getId());
-                                        if (onItemListener != null) {
-                                            onItemListener.dataChange(customer.getRemainder());
-                                        }
-                                    }
-
-
-                                    consumeRechargeRecordList.remove(position);
-                                    notifyDataSetChanged();
-                                }
-                            })
-                            .show();
-                    return true;
-                }
-            });
         }
     }
 

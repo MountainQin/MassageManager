@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -155,7 +154,8 @@ public class CustomerFragment extends Fragment {
                 Customer customer = customerList.get(position);
                 long customerId = customer.getId();
                 Intent intent = new Intent(getActivity(), CustomerMessageActivity.class);
-                intent.putExtra("customerId", customerId);
+//                intent.putExtra(CustomerMessageActivity.EXTRA_PERSON_ID,customerId);
+                intent.putExtra("personId",customerId);
                 startActivityForResult(intent, MESSAGE);
             }
         });
