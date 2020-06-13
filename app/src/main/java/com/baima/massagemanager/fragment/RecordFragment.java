@@ -6,20 +6,21 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baima.massagemanager.OnLoadMoreListener;
 import com.baima.massagemanager.PickDateActivity;
 import com.baima.massagemanager.R;
 import com.baima.massagemanager.RecordAdapter;
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.util.CalendarUtil;
 import com.baima.massagemanager.util.ConsumeRecordUtil;
+import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
+import com.github.jdsjlzx.recyclerview.LRecyclerView;
+import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 
 import org.litepal.LitePal;
 
@@ -29,58 +30,68 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class RecordFragment extends Fragment implements View.OnClickListener {
+public class RecordFragment extends Fragment implements View.OnClickListener, OnLoadMoreListener {
 
     private static final int PICK_DATE = 1;
 
 
     private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
     private TextView tv_date;
-    private RecyclerView rv_record;
+    private LRecyclerView lrv_record;
     private RecordAdapter adapter;
     private Calendar calendar;
     private long startTimeInMillis;
     private long endTimeInMillis;
     private int y;
     private boolean isInitData;
+    private LRecyclerViewAdapter lRecyclerViewAdapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_record, container, false);
         tv_date = view.findViewById(R.id.tv_date);
-        rv_record = view.findViewById(R.id.rv_record);
+        lrv_record = view.findViewById(R.id.lrv_record);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        rv_record.setLayoutManager(linearLayoutManager);
+        lrv_record.setLayoutManager(linearLayoutManager);
         adapter = new RecordAdapter(getActivity(), consumeRecordList);
-        rv_record.setAdapter(adapter);
+        lRecyclerViewAdapter = new LRecyclerViewAdapter(adapter);
+        lrv_record.setAdapter(lRecyclerViewAdapter);
+
         initData();
+        consumeRecordList.clear();
+        loadMoreLeast20();
         refreshTvDate();
 
 
         tv_date.setOnClickListener(this);
-        rv_record.setOnScrollListener(new OnLoadMoreListener() {
-            @Override
-            public void onLoadMore(int lastPosition) {
-                loadMoreLeast20();
-                refreshTvDate();
-                //往前一毫秒
-                calendar.setTimeInMillis(startTimeInMillis - 1);
-                if (calendar.get(Calendar.YEAR) < 2020) {
-                    Toast.makeText(getActivity(), "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        lrv_record.setOnLoadMoreListener(this);
         return view;
     }
 
     @Override
+    public void onLoadMore() {
+        loadMoreLeast20();
+        lrv_record.refreshComplete(0);
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) lrv_record.getLayoutManager();
+        if (layoutManager.findLastCompletelyVisibleItemPosition() == layoutManager.getItemCount() - 1) {
+            Toast.makeText(getActivity(), "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
+        }
+        refreshTvDate();
+    }
+
+    @Override
     public void onClick(View v) {
-        Intent intent = new Intent(getActivity(), PickDateActivity.class);
-        intent.putExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
-        intent.putExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
-        startActivityForResult(intent, PICK_DATE);
+        switch (v.getId()) {
+            case R.id.tv_date:
+                Intent intent = new Intent(getActivity(), PickDateActivity.class);
+                intent.putExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
+                intent.putExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
+                startActivityForResult(intent, PICK_DATE);
+                break;
+        }
     }
 
     @Override
@@ -111,10 +122,9 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
     //刷新 列表数据
     public void refreshListData() {
         consumeRecordList.clear();
-        consumeRecordList.addAll(
-                LitePal.where("consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                        .order("consumeTimestamp desc").find(ConsumeRecord.class)
-        );
+        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(ConsumeRecord.class);
+        consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList));
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
@@ -128,7 +138,6 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
                 .order("id desc").find(ConsumeRecord.class);
         this.consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
         adapter.notifyDataSetChanged();
-        rv_record.scrollToPosition(0);
     }
 
 
@@ -157,7 +166,6 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         startTimeInMillis = calendar.getTimeInMillis();
         endTimeInMillis = calendar.getTimeInMillis();
-        loadMoreLeast20();
     }
 
     //往前一天加载，至少20
@@ -169,7 +177,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener {
             if (calendar.get(Calendar.YEAR) < 2020) {
                 break;
             }
-            list.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis));
+            consumeRecordList.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis));
             startTimeInMillis = calendar.getTimeInMillis();
         }
         consumeRecordList.addAll(list);

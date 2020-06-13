@@ -15,9 +15,9 @@
         android:focusable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-        <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_record"
+        <com.github.jdsjlzx.recyclerview.LRecyclerView
+        android:id="@+id/lrv_record"
             android:layout_margin="5dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+            android:layout_height="match_parent"></com.github.jdsjlzx.recyclerview.LRecyclerView>
 </LinearLayout>
