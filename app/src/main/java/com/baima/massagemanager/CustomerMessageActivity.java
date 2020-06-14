@@ -1,12 +1,18 @@
 package com.baima.massagemanager;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
+import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.util.StringUtil;
+import com.github.jdsjlzx.interfaces.OnItemLongClickListener;
 
 import org.litepal.LitePal;
 
@@ -16,17 +22,76 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class CustomerMessageActivity extends BaseActivity<Customer, Object> {
+public class CustomerMessageActivity extends BaseActivity<Customer, Object> implements OnItemLongClickListener {
 
+    private TextView tv_recharge;
+    private TextView tv_consume;
+    private TextView tv_remainder;
+
+    @Override
+    public void onItemLongClick(View view, int position) {
+        showDeleteRecordDialog(position);
+    }
 
     @Override
     public void initViews() {
         super.initViews();
+        tv_recharge = findViewById(R.id.tv_recharge);
+        tv_consume = findViewById(R.id.tv_consume);
+        tv_remainder = findViewById(R.id.tv_remainder);
+
         tv_recharge.setVisibility(View.VISIBLE);
         tv_consume.setVisibility(View.VISIBLE);
         tv_remainder.setVisibility(View.VISIBLE);
 
+        tv_recharge.setOnClickListener(this);
+        tv_consume.setOnClickListener(this);
+        tv_remainder.setOnClickListener(this);
+        lRecyclerViewAdapter.setOnItemLongClickListener(this);
+    }
 
+    @Override
+    public void onClick(View v) {
+        super.onClick(v);
+        Intent intent = null;
+        switch (v.getId()) {
+            case R.id.tv_recharge:
+                intent = new Intent(this, RechargeActivity.class);
+                intent.putExtra("customerId", t.getId());
+                startActivityForResult(intent, RECHARGE);
+                break;
+            case R.id.tv_consume:
+                intent = new Intent(this, ConsumeActivity.class);
+                intent.putExtra("customerId", t.getId());
+                startActivityForResult(intent, CONSUME);
+                break;
+            case R.id.tv_remainder:
+                intent = new Intent(this, EditActivity.class);
+                startActivityForResult(intent, ALTER_REMAINDER);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+            case RECHARGE:
+            case CONSUME:
+                refreshBaseMessage();
+                refreshListData(startTimeInMillis, endTimeInMillis);
+                break;
+            case ALTER_REMAINDER:
+                double remainder = Double.valueOf(data.getStringExtra("inputData"));
+                t.setRemainder(remainder);
+                if (remainder == 0) {
+                    t.setToDefault("remainder");
+                }
+                t.update(t.getId());
+                refreshBaseMessage();
+                MainActivity.customerFragment.refreshCustomerList();
+                return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -36,7 +101,7 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> {
 
     @Override
     public RecyclerView.Adapter getAdapter(List<Object> dataList) {
-return new CustomerRecordAdapter(this,dataList);
+        return new CustomerRecordAdapter(this, dataList);
     }
 
     @Override
@@ -59,7 +124,7 @@ return new CustomerRecordAdapter(this,dataList);
     @Override
     public void refreshListData(long startTimeInMillis, long endTimeInMillis) {
         dataList.clear();
-        dataList.addAll(getConsumeRechargeRecordList(startTimeInMillis,endTimeInMillis));
+        dataList.addAll(getConsumeRechargeRecordList(startTimeInMillis, endTimeInMillis));
         lRecyclerViewAdapter.notifyDataSetChanged();
     }
 
@@ -75,10 +140,6 @@ return new CustomerRecordAdapter(this,dataList);
     private List getConsumeRechargeRecordList(long startTimeInMillis, long endTimeInMillis) {
         long customerId = t.getId();
         List consumeRechargeRecordList = new ArrayList<>();
-        //充值记录
-        List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=? and timeStamp >=? and timeStamp <?", String.valueOf(customerId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                .order("id desc").find(RechargeRecord.class);
-        consumeRechargeRecordList.addAll(rechargeRecordList);
 
         //消费记录
         List<ConsumeRecord> consumeRecordList = LitePal.where("customerId=? and consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(customerId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
@@ -95,6 +156,11 @@ return new CustomerRecordAdapter(this,dataList);
             }
         }
         consumeRechargeRecordList.addAll(consumeRecordList);
+
+        //充值记录
+        List<RechargeRecord> rechargeRecordList = LitePal.where("customerId=? and timeStamp >=? and timeStamp <?", String.valueOf(customerId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(RechargeRecord.class);
+        consumeRechargeRecordList.addAll(rechargeRecordList);
 
         //消费和充值一起按时间排序
         Collections.sort(consumeRechargeRecordList, new Comparator() {
@@ -119,5 +185,103 @@ return new CustomerRecordAdapter(this,dataList);
             }
         });
         return consumeRechargeRecordList;
+    }
+
+    //删除项目的对话框
+    private void showDeleteRecordDialog(final int position) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("你确定删除这条记录吗？")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        Object o = dataList.get(position);
+                        //如果 是记录
+                        if (o instanceof ConsumeRecord) {
+                            ConsumeRecord consumeRecord = (ConsumeRecord) o;
+                            //删除数据 表的数据 ，如果 有相同记录都删除
+                            long timestampFlag = consumeRecord.getTimestampFlag();
+                            List<ConsumeRecord> all = LitePal.findAll(ConsumeRecord.class);
+                            for (int i = 0; i < all.size(); i++) {
+                                if (timestampFlag == all.get(i).getTimestampFlag()) {
+                                    //修改员工时间
+                                    long staffId = all.get(i).getStaffId();
+                                    List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
+                                    if (staffList.size() > 0) {
+                                        Staff staff = staffList.get(0);
+                                        double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
+                                        double workTime = consumeRecord.getWorkTime();
+                                        hoursOfCurrentMonth -= workTime;
+                                        staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
+                                        if (hoursOfCurrentMonth == 0) {
+                                            staff.setToDefault("hoursOfCurrentMonth");
+                                        }
+                                        staff.update(staffId);
+                                    }
+//删除记录
+                                    all.get(i).delete();
+                                }
+                            }
+
+                            //刷新员工列表记录列表
+                            MainActivity.staffFragment.refreshListData();
+                            MainActivity.recordFragment.refreshListData();
+
+                            //修改顾客 剩余时间
+                            long customerId = consumeRecord.getCustomerId();
+                            List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
+                            if (customerList.size() > 0) {
+                                Customer customer = customerList.get(0);
+                                double remainder = customer.getRemainder() + consumeRecord.getConsumeTime();
+                                customer.setRemainder(remainder);
+                                if (remainder == 0) {
+                                    //更新为默认值
+                                    customer.setToDefault("remainder");
+                                }
+                                customer.update(customer.getId());
+
+                                //
+                                String remainderStr = StringUtil.doubleTrans(remainder);
+                                tv_remainder.setText("剩余：" + remainderStr + "小时");
+                                setResult(RESULT_OK);
+                            }
+
+                            dataList.remove(position);
+                            adapter.notifyDataSetChanged();
+                        } else {
+//如果 是充值记录
+                            RechargeRecord rechargeRecord = (RechargeRecord) o;
+                            //从数据 表删除
+                            rechargeRecord.delete();
+
+//修改顾客表数据
+                            long customerId = rechargeRecord.getCustomerId();
+                            List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
+                            if (customerList.size() > 0) {
+                                Customer customer = customerList.get(0);
+                                double remainder = customer.getRemainder() - rechargeRecord.getRechargeHour();
+                                customer.setRemainder(remainder);
+                                if (remainder == 0) {
+                                    //更新为默认值
+                                    customer.setToDefault("remainder");
+                                }
+                                customer.update(customer.getId());
+
+                                //
+                                String remainderStr = StringUtil.doubleTrans(remainder);
+                                tv_remainder.setText("剩余：" + remainderStr + "小时");
+                                setResult(RESULT_OK);
+                            }
+
+                            dataList.remove(position);
+                            adapter.notifyDataSetChanged();
+
+                        }
+                    }
+                })
+                .show();
+
     }
 }

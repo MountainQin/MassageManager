@@ -202,7 +202,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
             //保存成功
             if (isSaved) {
                 Toast.makeText(this, "充值成功！", Toast.LENGTH_SHORT).show();
-                setResult(RESULT_OK);
+                setResult(RESULT_OK,getIntent());
                 finish();
             }
 

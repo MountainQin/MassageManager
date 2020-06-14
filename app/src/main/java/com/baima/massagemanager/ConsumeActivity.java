@@ -242,7 +242,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         }
         customer.update(customer.getId());
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
-        setResult(RESULT_OK);
+        setResult(RESULT_OK,getIntent());
         finish();
     }
 
