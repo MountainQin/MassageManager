@@ -110,7 +110,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
                     tv_date_time.setText(new Date(timeInMillis).toLocaleString());
                     break;
                 case ALTER_HOUR_PRICE:
-                    hourPrice = data.getDoubleExtra("inputData", hourPrice);
+                    hourPrice = Double.valueOf(data.getStringExtra("inputData"));
                     tv_recharge_amount.setText("充值金额(" + StringUtil.doubleTrans(hourPrice, true) + "元=1小时)");
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     edit.putFloat("hourPrice", (float) hourPrice);
@@ -201,6 +201,7 @@ public class RechargeActivity extends AppCompatActivity implements View.OnClickL
 
             //保存成功
             if (isSaved) {
+                MainActivity.customerFragment.refreshCustomerList();
                 Toast.makeText(this, "充值成功！", Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK,getIntent());
                 finish();

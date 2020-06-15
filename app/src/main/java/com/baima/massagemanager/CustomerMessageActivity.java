@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class CustomerMessageActivity extends BaseActivity<Customer, Object> implements OnItemLongClickListener {
+public class CustomerMessageActivity extends BaseActivity<Customer, Object> {
 
     private TextView tv_recharge;
     private TextView tv_consume;
@@ -47,7 +47,6 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> impl
         tv_recharge.setOnClickListener(this);
         tv_consume.setOnClickListener(this);
         tv_remainder.setOnClickListener(this);
-        lRecyclerViewAdapter.setOnItemLongClickListener(this);
     }
 
     @Override
@@ -74,22 +73,24 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> impl
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        switch (requestCode) {
-            case RECHARGE:
-            case CONSUME:
-                refreshBaseMessage();
-                refreshListData(startTimeInMillis, endTimeInMillis);
-                break;
-            case ALTER_REMAINDER:
-                double remainder = Double.valueOf(data.getStringExtra("inputData"));
-                t.setRemainder(remainder);
-                if (remainder == 0) {
-                    t.setToDefault("remainder");
-                }
-                t.update(t.getId());
-                refreshBaseMessage();
-                MainActivity.customerFragment.refreshCustomerList();
-                return;
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case RECHARGE:
+                case CONSUME:
+                    refreshBaseMessage();
+                    refreshListData(startTimeInMillis, endTimeInMillis);
+                    return;
+                case ALTER_REMAINDER:
+                    double remainder = Double.valueOf(data.getStringExtra("inputData"));
+                    t.setRemainder(remainder);
+                    if (remainder == 0) {
+                        t.setToDefault("remainder");
+                    }
+                    t.update(t.getId());
+                    refreshBaseMessage();
+                    MainActivity.customerFragment.refreshCustomerList();
+                    return;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -226,6 +227,7 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> impl
                             }
 
                             //刷新员工列表记录列表
+                            MainActivity.customerFragment.refreshCustomerList();
                             MainActivity.staffFragment.refreshListData();
                             MainActivity.recordFragment.refreshListData();
 
@@ -245,7 +247,7 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> impl
                                 //
                                 String remainderStr = StringUtil.doubleTrans(remainder);
                                 tv_remainder.setText("剩余：" + remainderStr + "小时");
-                                setResult(RESULT_OK);
+                                setResult(RESULT_OK, getIntent());
                             }
 
                             dataList.remove(position);
@@ -272,7 +274,8 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> impl
                                 //
                                 String remainderStr = StringUtil.doubleTrans(remainder);
                                 tv_remainder.setText("剩余：" + remainderStr + "小时");
-                                setResult(RESULT_OK);
+//                                setResult(RESULT_OK);
+                                MainActivity.customerFragment.refreshCustomerList();
                             }
 
                             dataList.remove(position);

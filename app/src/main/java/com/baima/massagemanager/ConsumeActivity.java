@@ -231,9 +231,6 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             LitePal.update(Staff.class, contentValues, staffId);
         }
 
-        //通知员工列表记录列表
-        MainActivity.staffFragment.refreshListData();
-        MainActivity.recordFragment.refreshListData();
 
         //保存顾客 表的数据
         customer.setRemainder(remainderLater);
@@ -241,6 +238,12 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             customer.setToDefault("remainder");
         }
         customer.update(customer.getId());
+
+        //通知顾客 员工列表记录列表
+        MainActivity.customerFragment.refreshCustomerList();
+        MainActivity.staffFragment.refreshListData();
+        MainActivity.recordFragment.refreshListData();
+
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK,getIntent());
         finish();

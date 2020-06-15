@@ -154,8 +154,7 @@ public class CustomerFragment extends Fragment {
                 Customer customer = customerList.get(position);
                 long customerId = customer.getId();
                 Intent intent = new Intent(getActivity(), CustomerMessageActivity.class);
-//                intent.putExtra(CustomerMessageActivity.EXTRA_PERSON_ID,customerId);
-                intent.putExtra("personId",customerId);
+                intent.putExtra(CustomerMessageActivity.EXTRA_PERSON_ID, customerId);
                 startActivityForResult(intent, MESSAGE);
             }
         });

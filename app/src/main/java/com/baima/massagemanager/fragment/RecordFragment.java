@@ -19,6 +19,7 @@ import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.util.CalendarUtil;
 import com.baima.massagemanager.util.ConsumeRecordUtil;
 import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
+import com.github.jdsjlzx.interfaces.OnRefreshListener;
 import com.github.jdsjlzx.recyclerview.LRecyclerView;
 import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 
@@ -67,6 +68,13 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
 
         tv_date.setOnClickListener(this);
         lrv_record.setOnLoadMoreListener(this);
+        //如果不设置下拉 的时候会出现 正在刷新
+        lrv_record.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                lrv_record.refreshComplete(0);
+            }
+        });
         return view;
     }
 
@@ -121,25 +129,36 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
 
     //刷新 列表数据
     public void refreshListData() {
-        consumeRecordList.clear();
-        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                .order("id desc").find(ConsumeRecord.class);
-        consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList));
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
+        refreshListData(startTimeInMillis, endTimeInMillis);
     }
 
 
     //根据指定起始时间戳刷新 列表数据
     private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
         consumeRecordList.clear();
-        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                .order("id desc").find(ConsumeRecord.class);
-        this.consumeRecordList.addAll(ConsumeRecordUtil.sortConsumeTimestampDesc(list));
-        adapter.notifyDataSetChanged();
+        consumeRecordList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
+
+    //根据起始时间获取 消费记录，同一次只保存一个
+    private List<ConsumeRecord> getConsumeRecordList(long startTimeInMillis, long endTimeInMillis) {
+        List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(ConsumeRecord.class);
+        //同一次记录只保留一个
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = i + 1; j < list.size(); j++) {
+                if (list.get(i).getTimestampFlag() == list.get(j).getTimestampFlag()) {
+                    list.remove(j);
+                    j--;
+                }
+            }
+        }
+        return ConsumeRecordUtil.sortConsumeTimestampDesc(list);
+
+    }
 
     //时间格式化，年月日
     private String datEFormat(long timeStamp) {
@@ -177,7 +196,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
             if (calendar.get(Calendar.YEAR) < 2020) {
                 break;
             }
-            consumeRecordList.addAll(ConsumeRecordUtil.getConsumeRecordListPreviousDay(startTimeInMillis));
+            list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
             startTimeInMillis = calendar.getTimeInMillis();
         }
         consumeRecordList.addAll(list);

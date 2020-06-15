@@ -81,7 +81,8 @@ public class StaffFragment extends Fragment implements View.OnClickListener, Tex
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(getActivity(), StaffMessageActivity.class);
-        intent.putExtra("staffId", staffList.get(position).getId());
+        long staffId= staffList.get(position).getId();
+        intent.putExtra(StaffMessageActivity.EXTRA_PERSON_ID,staffId);
         startActivityForResult(intent, STAFF_MESSAGE);
     }
 

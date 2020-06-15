@@ -1,11 +1,9 @@
 package com.baima.massagemanager;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -178,12 +176,13 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
 
         //修改员工本月时间
         staff.setHoursOfCurrentMonth(currentMonthTimeLater);
-        if (currentMonthTimeLater==0){
+        if (currentMonthTimeLater == 0) {
             staff.setToDefault("hoursOfCurrentMonth");
         }
         staff.update(staff.getId());
 
-        //刷新记录列表
+        //刷新员工，记录列表
+        MainActivity.staffFragment.refreshListData();
         MainActivity.recordFragment.refreshListData();
 
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();

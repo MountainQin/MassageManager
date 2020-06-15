@@ -17,7 +17,7 @@
         android:layout_height="wrap_content" />
         <com.github.jdsjlzx.recyclerview.LRecyclerView
         android:id="@+id/lrv_record"
-            android:layout_margin="5dp"
+                        android:layout_margin="5dp"
         android:layout_width="match_parent"
             android:layout_height="match_parent"></com.github.jdsjlzx.recyclerview.LRecyclerView>
 </LinearLayout>
