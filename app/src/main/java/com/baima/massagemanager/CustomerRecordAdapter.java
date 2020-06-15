@@ -115,6 +115,11 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             consumeRecordViewHolder.tv_staff.setText(consumeRecord.getStaffName());
             consumeRecordViewHolder.tv_remark.setText(consumeRecord.getRemark());
             consumeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
+            if (MainActivity.isShowTimestampFlag){
+                consumeRecordViewHolder.tv_timestamp_flag.setVisibility(View.VISIBLE);
+            }else{
+                consumeRecordViewHolder.tv_timestamp_flag.setVisibility(View.GONE);
+            }
         } else if (o instanceof RechargeRecord) {
             //充值
             RechargeRecordViewHolder rechargeRecordViewHolder = (RechargeRecordViewHolder) holder;
@@ -129,6 +134,11 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
                     StringUtil.doubleTrans(rechargeRecord.getRemainder()) + "小时");
             rechargeRecordViewHolder.tv_remark.setText(rechargeRecord.getRemark());
             rechargeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(rechargeRecord.getTimestampFlag()));
+            if (MainActivity.isShowTimestampFlag){
+                rechargeRecordViewHolder.tv_timestamp_flag.setVisibility(View.VISIBLE);
+            }else{
+                rechargeRecordViewHolder.tv_timestamp_flag.setVisibility(View.GONE);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.baima.massagemanager;
 
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.util.CalendarUtil;
@@ -37,5 +38,10 @@ public class RecordAdapter extends StaffRecordAdapter {
         holder.tv_staff_names.setText(consumeRecord.getStaffName());
         holder.tv_remark.setText(consumeRecord.getRemark());
         holder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
+        if (MainActivity.isShowTimestampFlag){
+            holder.tv_timestamp_flag.setVisibility(View.VISIBLE);
+        }else{
+            holder.tv_timestamp_flag.setVisibility(View.GONE);
+        }
     }
 }

@@ -82,6 +82,11 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
         holder.tv_remark.setText(consumeRecord.getRemark());
         long timestampFlag = consumeRecord.getTimestampFlag();
         holder.tv_timestamp_flag.setText(String.valueOf(timestampFlag));
+        if (MainActivity.isShowTimestampFlag){
+            holder.tv_timestamp_flag.setVisibility(View.VISIBLE);
+        }else{
+            holder.tv_timestamp_flag.setVisibility(View.GONE);
+        }
     }
 
     @Override
