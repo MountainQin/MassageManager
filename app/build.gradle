@@ -33,6 +33,6 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:24.2.1'
 
     //
-    implementation  'com.github.jdsjlzx:LRecyclerView:1.4.3'
+    implementation 'com.github.jdsjlzx:LRecyclerView:1.4.3'
     compile 'com.google.code.gson:gson:2.7'
 }

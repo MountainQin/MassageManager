@@ -25,6 +25,7 @@ public class RecordAdapter extends StaffRecordAdapter {
         holder.tv_time.setText(new Date(consumeTimestamp).toLocaleString());
         //顾客 姓名
         long customerId = consumeRecord.getCustomerId();
+        //会员顾客
         if (customerId > 0) {
             holder.tv_work_time.setText(consumeRecord.getCustomeName());
         } else if (customerId == -1) {
@@ -33,9 +34,9 @@ public class RecordAdapter extends StaffRecordAdapter {
         }
         //消费时间
         double consumeTime = consumeRecord.getConsumeTime();
-        holder.tv_month_time.setText(StringUtil.doubleTrans(consumeTime) + "小时");
+        holder.tv_month_time.setText("消费:"+StringUtil.doubleTrans(consumeTime) + "小时");
 
-        holder.tv_staff_names.setText(consumeRecord.getStaffName());
+        holder.tv_staff_names.setText("员工:"+consumeRecord.getStaffName());
         holder.tv_remark.setText(consumeRecord.getRemark());
         holder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
         if (MainActivity.isShowTimestampFlag){

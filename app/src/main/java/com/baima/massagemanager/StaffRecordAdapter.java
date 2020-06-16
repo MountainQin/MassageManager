@@ -75,10 +75,10 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
         holder.tv_work_time.setText("工作：" + StringUtil.doubleTrans(workTime) + "小时");
         double currentMonthTime = consumeRecord.getCurrentMonthTime();
         holder.tv_month_time.setText("本月：" + StringUtil.doubleTrans(currentMonthTime) + "小时");
-        holder.tv_customer_name.setText(consumeRecord.getCustomeName());
-//        if (workTime!=consumeRecord.getConsumeTime()) {
-        holder.tv_staff_names.setText(consumeRecord.getStaffName());
-//        }
+        holder.tv_customer_name.setText("顾客:"+consumeRecord.getCustomeName());
+        if (workTime!=consumeRecord.getConsumeTime()) {
+        holder.tv_staff_names.setText("员工:"+consumeRecord.getStaffName());
+        }
         holder.tv_remark.setText(consumeRecord.getRemark());
         long timestampFlag = consumeRecord.getTimestampFlag();
         holder.tv_timestamp_flag.setText(String.valueOf(timestampFlag));

@@ -112,7 +112,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
             consumeRecordViewHolder.tv_consume_time.setText("消费：" + consumeTimeStr + "小时");
             String remainderStr = StringUtil.doubleTrans(consumeRecord.getRemainder());
             consumeRecordViewHolder.tv_remainder.setText("剩余：" + remainderStr + "小时");
-            consumeRecordViewHolder.tv_staff.setText(consumeRecord.getStaffName());
+            consumeRecordViewHolder.tv_staff.setText("员工:"+consumeRecord.getStaffName());
             consumeRecordViewHolder.tv_remark.setText(consumeRecord.getRemark());
             consumeRecordViewHolder.tv_timestamp_flag.setText(String.valueOf(consumeRecord.getTimestampFlag()));
             if (MainActivity.isShowTimestampFlag){

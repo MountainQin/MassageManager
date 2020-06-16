@@ -1,14 +1,22 @@
 package com.baima.massagemanager;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,7 +40,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public abstract class BaseActivity<T extends Person, E> extends AppCompatActivity implements View.OnClickListener, OnLoadMoreListener, OnItemLongClickListener ,OnRefreshListener {
+public abstract class BaseActivity<T extends Person, E> extends AppCompatActivity implements View.OnClickListener, OnLoadMoreListener, OnItemLongClickListener, OnRefreshListener {
 
     public static final String EXTRA_PERSON_ID = "personId";
 
@@ -46,10 +54,8 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
     private static final int ALTER_REMARK = 9;
     private static final int PICK_DATE = 10;
     public static final int ALTER_REMAINDER = 11;
+    private static final int CALL_PHONE = 12;
 
-    private Staff staff;
-
-    public List<ConsumeRecord> consumeRecordList = new ArrayList<>();
 
     private TextView tv_delete;
     public LRecyclerView lrv_staffer_record;
@@ -62,7 +68,6 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
     private TextView tv_remark;
     private TextView tv_date;
     public RecyclerView.Adapter adapter;
-    private long staffId;
     public LRecyclerViewAdapter lRecyclerViewAdapter;
     public Calendar calendar;
     public long startTimeInMillis;
@@ -112,7 +117,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
 
     @Override
     public void onClick(View v) {
-        Intent editActivityIntent = null;
+        Intent intent = null;
 
         switch (v.getId()) {
             case R.id.tv_delete:
@@ -120,28 +125,52 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                 break;
 
             case R.id.tv_number:
-                editActivityIntent = new Intent(this, EditActivity.class);
-                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_NUMBER);
-                startActivityForResult(editActivityIntent, ALTER_NUMBER);
+                intent = new Intent(this, EditActivity.class);
+                intent.putExtra("inputType", InputType.TYPE_CLASS_NUMBER);
+                startActivityForResult(intent, ALTER_NUMBER);
                 break;
             case R.id.tv_name:
                 //修改姓名
-                editActivityIntent = new Intent(this, EditActivity.class);
-                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
-                startActivityForResult(editActivityIntent, ALTER_NAME);
+                intent = new Intent(this, EditActivity.class);
+                intent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
+                startActivityForResult(intent, ALTER_NAME);
                 break;
             case R.id.tv_phone_number:
-                editActivityIntent = new Intent(this, EditActivity.class);
-                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_PHONE);
-                startActivityForResult(editActivityIntent, ALTER_PHONE_NUMBER);
+                intent = new Intent(this, EditActivity.class);
+                intent.putExtra("inputType", InputType.TYPE_CLASS_PHONE);
+                startActivityForResult(intent, ALTER_PHONE_NUMBER);
+                break;
+            case R.id.tv_call:
+                String phoneNumber = t.getPhoneNumber();
+                if (TextUtils.isEmpty(phoneNumber)) {
+                    Toast.makeText(this, "手机号为空，请检查 重试！", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, CALL_PHONE);
+                } else {
+                    call(phoneNumber);
+                }
+                break;
+            case R.id.tv_sms:
+                String phoneNumber1 = t.getPhoneNumber();
+                if (TextUtils.isEmpty(phoneNumber1)) {
+                    Toast.makeText(this, "手机号为空，请检查 重试！", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                intent = new Intent(this, SendSmsActivity.class);
+                intent.putExtra("phoneNumber", phoneNumber1);
+                startActivity(intent);
                 break;
             case R.id.tv_remark:
-                editActivityIntent = new Intent(this, EditActivity.class);
-                editActivityIntent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
-                startActivityForResult(editActivityIntent, ALTER_REMARK);
+                intent = new Intent(this, EditActivity.class);
+                intent.putExtra("inputType", InputType.TYPE_CLASS_TEXT);
+                startActivityForResult(intent, ALTER_REMARK);
                 break;
             case R.id.tv_date:
-                Intent intent = new Intent(this, PickDateActivity.class);
+                intent = new Intent(this, PickDateActivity.class);
                 intent.putExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
                 intent.putExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
                 startActivityForResult(intent, PICK_DATE);
@@ -178,6 +207,16 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                 case ALTER_NAME:
                     t.setName(inputData);
                     t.update(t.getId());
+                    //如果 是顾客 ，修改消费记录里的顾客 姓名
+                    if (t instanceof Customer) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put("customeName", t.getName());
+                        LitePal.updateAll(ConsumeRecord.class, contentValues, "CustomerId=?", String.valueOf(t.getId()));
+                        //不刷新也 行
+                        MainActivity.recordFragment.refreshListData();
+                    }
+
+
                     refreshBaseMessage();
                     return;
                 case ALTER_PHONE_NUMBER:
@@ -199,6 +238,19 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case CALL_PHONE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    call(t.getPhoneNumber());
+                } else {
+                    Toast.makeText(this, "没有获得授权，无法呼叫", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
 
     public void initViews() {
         tv_delete = findViewById(R.id.tv_delete);
@@ -224,6 +276,8 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
         tv_number.setOnClickListener(this);
         tv_name.setOnClickListener(this);
         tv_phone_number.setOnClickListener(this);
+        tv_call.setOnClickListener(this);
+        tv_sms.setOnClickListener(this);
         tv_remark.setOnClickListener(this);
         tv_date.setOnClickListener(this);
 
@@ -360,12 +414,12 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                                 customer.update(customer.getId());
                             }
 
-                                //
-                                refreshBaseMessage();
-                                setResult(RESULT_OK, getIntent());
+                            //
+                            refreshBaseMessage();
+                            setResult(RESULT_OK, getIntent());
 
                             dataList.remove(position);
-                                adapter.notifyDataSetChanged();
+                            adapter.notifyDataSetChanged();
                             //刷新员工列表记录列表
                             MainActivity.customerFragment.refreshCustomerList();
                             MainActivity.staffFragment.refreshListData();
@@ -404,4 +458,13 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                 .show();
 
     }
+
+    //呼叫
+    private void call(String phoneNumber) {
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        startActivity(intent);
+
+    }
+
 }

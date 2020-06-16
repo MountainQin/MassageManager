@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -32,10 +33,15 @@ import com.baima.massagemanager.entity.Staff;
 import com.baima.massagemanager.util.BackupRetuceUtil;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.litepal.crud.LitePalSupport;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MoreFragment extends Fragment implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
@@ -45,6 +51,7 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
 
     //备份的文件的路径
     private String filePath = new File(Environment.getExternalStorageDirectory(), "BaiMa/MassageManager/db.json").getAbsolutePath();
+    private String propertiesPath = new File(Environment.getExternalStorageDirectory(), "BaiMa/MassageManager/dsp.json").getAbsolutePath();
     private Class<LitePalSupport>[] classes = new Class[]{ConsumeRecord.class, RechargeRecord.class, Customer.class, Staff.class};
 
     private int backupOrRetuce;
@@ -159,16 +166,36 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                        final ProgressDialog progressDialog = new ProgressDialog(getActivity());
                         progressDialog.setMessage("正在备份，请稍候！");
                         progressDialog.show();
-                        try {
-                            BackupRetuceUtil.backup(filePath, classes);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "备份失败，请检查 重试！", Toast.LENGTH_SHORT).show();
-                        }
-                        progressDialog.dismiss();
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    BackupRetuceUtil.backup(filePath, classes);
+                                    //备份小时金额和提成
+                                    SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                                    double hourPercentage = defaultSharedPreferences.getFloat("hourPercentage", 0F);
+                                    double hourPrice = defaultSharedPreferences.getFloat("hourPrice", 88.0F);
+                                    Map<String, Double> map = new HashMap<>();
+                                    map.put("hourPrice", hourPrice);
+                                    map.put("hourPercentage", hourPercentage);
+
+                                    JSONObject jsonObject = new JSONObject(map);
+                                    FileWriter fileWriter = new FileWriter(propertiesPath);
+                                    fileWriter.write(jsonObject.toString());
+                                    fileWriter.flush();
+                                    fileWriter.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), "备份失败，请检查 重试！", Toast.LENGTH_SHORT).show();
+                                }
+                                progressDialog.dismiss();
+
+                            }
+                        }).start();
                     }
                 })
                 .show();
@@ -187,25 +214,54 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
                         dialog.dismiss();
 
                         String msg = "正在还原，请稍候！";
-                        ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                        final ProgressDialog progressDialog = new ProgressDialog(getActivity());
                         progressDialog.setMessage(msg);
                         progressDialog.show();
-                        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
-                        try {
-                            BackupRetuceUtil.retuce(filePath, classes);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "解析文件错误！", Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "读取文件错误！", Toast.LENGTH_SHORT).show();
-                        }
-                        progressDialog.dismiss();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    BackupRetuceUtil.retuce(filePath, classes);
+                                    //还原小时金额提成
+                                    FileReader fileReader = new FileReader(propertiesPath);
+                                    StringBuffer stringBuffer = new StringBuffer();
+                                    int len = -1;
+                                    char[] chars = new char[1024];
+                                    while ((len = fileReader.read(chars)) != -1) {
+                                        stringBuffer.append(chars, 0, len);
+                                    }
+                                    fileReader.close();
+
+                                    JSONObject jsonObject = new JSONObject(stringBuffer.toString());
+                                    double hourPrice = jsonObject.getDouble("hourPrice");
+                                    double hourPercentage = jsonObject.getDouble("hourPercentage");
+
+                                    SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                                    SharedPreferences.Editor edit = defaultSharedPreferences.edit();
+                                    edit.putFloat("hourPrice", (float) hourPrice);
+                                    edit.putFloat("hourPercentage", (float) (hourPercentage));
+                                    edit.apply();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), "解析文件错误！", Toast.LENGTH_SHORT).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), "读取文件错误！", Toast.LENGTH_SHORT).show();
+                                }
+                                progressDialog.dismiss();
+
+                                //还原成功后重新打开主界面
+                                Intent intent = new Intent(getActivity(), MainActivity.class);
+                                startActivity(intent);
+                                getActivity().finish();
+                            }
+                        }).start();
+
                     }
                 })
                 .show();
 
     }
 
-    }
+}
