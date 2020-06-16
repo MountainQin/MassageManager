@@ -8,6 +8,16 @@
         android:id="@+id/cb_timestamp_flag"
         android:text="显示时间戳标记"
         style="@style/ViewBaseStyle"/>
+
+    <TextView
+        android:id="@+id/tv_backup"
+        android:text="备份"
+                style="@style/ViewBaseStyle"/>
+
+    <TextView
+        android:id="@+id/tv_retuce"
+                android:text="还原"
+        style="@style/ViewBaseStyle"/>
     <TextView
         android:id="@+id/tv_version"
         style="@style/ViewBaseStyle"/>
