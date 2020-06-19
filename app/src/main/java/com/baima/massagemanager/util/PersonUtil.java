@@ -9,6 +9,22 @@ import org.litepal.LitePal;
 import java.util.List;
 
 public class PersonUtil {
+
+    /**
+     * 根据ID查找 顾客 或者员工
+     *
+     * @param tClass
+     * @param id
+     * @param <T>
+     */
+    public static <T extends Person> T getPerson(Class<T> tClass, long id) {
+        List<T> tList = LitePal.where("id=?", String.valueOf(id)).find(tClass);
+        if (tList.size() > 0) {
+            return tList.get(0);
+        }
+        return null;
+    }
+
     /**
      * 修改员工的本月时间
      *
@@ -32,7 +48,7 @@ public class PersonUtil {
         List<Customer> customerList = LitePal.where("id=?", String.valueOf(customerId)).find(Customer.class);
         if (customerList.size() > 0) {
             Customer customer = customerList.get(0);
-            double remainder = customer.getRemainder()+changeTime;
+            double remainder = customer.getRemainder() + changeTime;
             customer.setRemainder(remainder);
             if (remainder == 0) {
                 customer.setToDefault("remainder");

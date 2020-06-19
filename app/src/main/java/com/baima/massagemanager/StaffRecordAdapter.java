@@ -9,7 +9,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
+import com.baima.massagemanager.entity.WorkStaff;
 import com.baima.massagemanager.util.StringUtil;
+
+import org.litepal.LitePal;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -19,7 +22,7 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
 
     private Context context;
     public List<ConsumeRecord> consumeRecordList;
-
+    private long staffId;
 
     class ViewHolder extends RecyclerView.ViewHolder {
         View view;
@@ -49,6 +52,10 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
         this.consumeRecordList = consumeRecordList;
     }
 
+    public void setStaffId(long staffId) {
+        this.staffId = staffId;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -70,21 +77,30 @@ public class StaffRecordAdapter extends RecyclerView.Adapter<StaffRecordAdapter.
             holder.view.setBackgroundColor(0x880000FF);
         }
 
+        //设置员工相关数据
+        //根据消费记录ID和员工ID到工作员工库找记录
+        List<WorkStaff> workStaffList = LitePal.where("consumeRecordId=? and staffId=?", String.valueOf(consumeRecord.getId()), String.valueOf(staffId))
+                .find(WorkStaff.class);
+        if (workStaffList.size() > 0) {
+            WorkStaff workStaff = workStaffList.get(0);
+            double workTime = workStaff.getWorkTime();
+            holder.tv_work_time.setText("工作：" + StringUtil.doubleTrans(workTime) + "小时");
+            double currentMonthTime = workStaff.getCurrentMonthTime();
+            holder.tv_month_time.setText("本月：" + StringUtil.doubleTrans(currentMonthTime) + "小时");
+        }
 
-        final double workTime = consumeRecord.getWorkTime();
-        holder.tv_work_time.setText("工作：" + StringUtil.doubleTrans(workTime) + "小时");
-        double currentMonthTime = consumeRecord.getCurrentMonthTime();
-        holder.tv_month_time.setText("本月：" + StringUtil.doubleTrans(currentMonthTime) + "小时");
-        holder.tv_customer_name.setText("顾客:"+consumeRecord.getCustomeName());
-        if (workTime!=consumeRecord.getConsumeTime()) {
-        holder.tv_staff_names.setText("员工:"+consumeRecord.getStaffName());
+        holder.tv_customer_name.setText("顾客:" + consumeRecord.getCustomeName());
+        //如果 有多个工作员工才显示 员工姓名
+        holder.tv_staff_names.setText("");
+        if (LitePal.where("consumeRecordId=?",String.valueOf(consumeRecord.getId())).find(WorkStaff.class).size()>1){
+            holder.tv_staff_names.setText("员工：" + consumeRecord.getStaffName());
         }
         holder.tv_remark.setText(consumeRecord.getRemark());
         long timestampFlag = consumeRecord.getTimestampFlag();
         holder.tv_timestamp_flag.setText(String.valueOf(timestampFlag));
-        if (MainActivity.isShowTimestampFlag){
+        if (MainActivity.isShowTimestampFlag) {
             holder.tv_timestamp_flag.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             holder.tv_timestamp_flag.setVisibility(View.GONE);
         }
     }

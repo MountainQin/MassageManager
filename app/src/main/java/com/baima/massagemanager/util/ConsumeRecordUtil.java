@@ -1,6 +1,8 @@
 package com.baima.massagemanager.util;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
+import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 
 import org.litepal.LitePal;
 
@@ -53,12 +55,13 @@ public class ConsumeRecordUtil {
         calendar.add(Calendar.DAY_OF_MONTH, -dayCount);
         long timeInMillis = calendar.getTimeInMillis();
         consumeRecordList = LitePal.where("consumeTimestamp >= ? and consumeTimestamp < ?", String.valueOf(timeInMillis), String.valueOf(timeStamp))
-                                .order("id desc").find(ConsumeRecord.class);
+                .order("id desc").find(ConsumeRecord.class);
         return sortConsumeTimestampDesc(consumeRecordList);
     }
 
     /**
      * 根据指定时间戳指定员工获取前一天的消费记录
+     *
      * @param timeStamp
      * @param staffId
      * @return
@@ -72,5 +75,23 @@ public class ConsumeRecordUtil {
         consumeRecordList = LitePal.where("consumeTimestamp >= ? and consumeTimestamp < ? and staffId=?", String.valueOf(timeInMillis), String.valueOf(timeStamp), String.valueOf(staffId))
                 .order("id desc").find(ConsumeRecord.class);
         return sortConsumeTimestampDesc(consumeRecordList);
+    }
+
+    public static String getStaffNames(List<WorkStaff> workStaffList) {
+        StringBuffer stringBuffer = new StringBuffer();
+        for (int i = 0; i < workStaffList.size(); i++) {
+            WorkStaff workStaff = workStaffList.get(i);
+            List<Staff> staffList = LitePal.where("id=?", String.valueOf(workStaff.getStaffId())).find(Staff.class);
+            if (staffList.size() > 0) {
+                Staff staff = staffList.get(0);
+                String name = staff.getNumber() + "号 " + staff.getName();
+                if (i == workStaffList.size() - 1) {
+                    stringBuffer.append(name);
+                } else {
+                    stringBuffer.append(name).append(",");
+                }
+            }
+        }
+        return stringBuffer.toString();
     }
 }

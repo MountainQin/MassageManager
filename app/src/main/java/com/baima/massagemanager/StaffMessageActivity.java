@@ -1,7 +1,5 @@
 package com.baima.massagemanager;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -10,10 +8,9 @@ import android.widget.TextView;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 import com.baima.massagemanager.util.ConsumeRecordUtil;
-import com.baima.massagemanager.util.PersonUtil;
 import com.baima.massagemanager.util.StringUtil;
-import com.github.jdsjlzx.interfaces.OnItemLongClickListener;
 
 import org.litepal.LitePal;
 
@@ -41,6 +38,8 @@ public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
     @Override
     public void refreshBaseMessage() {
         super.refreshBaseMessage();
+        //设置员工ID
+        ((StaffRecordAdapter) adapter).setStaffId(t.getId());
         double hoursOfCurrentMonth = t.getHoursOfCurrentMonth();
         tv_current_month_time.setText("本月：" + StringUtil.doubleTrans(hoursOfCurrentMonth) + "小时");
     }
@@ -122,10 +121,18 @@ public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
 
     //获取指定起始时间的消费记录
     private List<ConsumeRecord> getConsumeRecordList(long startTimeInMillis, long endTimeInMillis) {
-        long stafId = t.getId();
-        List<ConsumeRecord> consumeRecordList = LitePal.where("staffId=? and consumeTimestamp >=? and consumeTimestamp <?", String.valueOf(stafId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+        List<ConsumeRecord> consumeRecordList = new ArrayList<>();
+        List<ConsumeRecord> list = LitePal.where("consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
                 .order("id desc").find(ConsumeRecord.class);
+        //判断 每条记录，如果工作员工有这个员工就添加到集合
+        for (int i = 0; i < list.size(); i++) {
+            ConsumeRecord consumeRecord = list.get(i);
+            List<WorkStaff> workStaffList = LitePal.where("consumeRecordId=? and staffId=?", String.valueOf(consumeRecord.getId()), String.valueOf(t.getId())).find(WorkStaff.class);
+if (workStaffList.size()>0){
+    consumeRecordList.add(consumeRecord);
+}
+        }
         return ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList);
     }
 
-    }
+}

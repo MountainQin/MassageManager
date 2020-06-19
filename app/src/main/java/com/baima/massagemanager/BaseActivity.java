@@ -26,7 +26,10 @@ import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.Person;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 import com.baima.massagemanager.util.CalendarUtil;
+import com.baima.massagemanager.util.ConsumeRecordUtil;
+import com.baima.massagemanager.util.PersonUtil;
 import com.github.jdsjlzx.interfaces.OnItemLongClickListener;
 import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
 import com.github.jdsjlzx.interfaces.OnRefreshListener;
@@ -202,6 +205,15 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                     }
                     t.setNumber(number);
                     t.update(t.getId());
+
+                    //如果 是员工修改消费记录里的员工姓名
+                    if (t instanceof Staff) {
+                        alterStaffNames((Staff) t);
+                        //刷新 员工和记录列表
+                        refreshListData(startTimeInMillis,endTimeInMillis);
+                        MainActivity.staffFragment.refreshListData();
+                        MainActivity.recordFragment.refreshListData();
+                    }
                     refreshBaseMessage();
                     return;
                 case ALTER_NAME:
@@ -214,8 +226,14 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                         LitePal.updateAll(ConsumeRecord.class, contentValues, "CustomerId=?", String.valueOf(t.getId()));
                         //不刷新也 行
                         MainActivity.recordFragment.refreshListData();
+                    } else if (t instanceof Staff) {
+                        //如果 是员工修改消费记录里的员工姓名
+                        alterStaffNames((Staff) t);
+                        //刷新 员工和记录列表
+refreshListData(startTimeInMillis,endTimeInMillis);
+                        MainActivity.staffFragment.refreshListData();
+                        MainActivity.recordFragment.refreshListData();
                     }
-
 
                     refreshBaseMessage();
                     return;
@@ -375,28 +393,20 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                         //如果 是记录
                         if (o instanceof ConsumeRecord) {
                             ConsumeRecord consumeRecord = (ConsumeRecord) o;
-                            //删除数据 表的数据 ，如果 有相同记录都删除
-                            long timestampFlag = consumeRecord.getTimestampFlag();
-                            List<ConsumeRecord> all = LitePal.findAll(ConsumeRecord.class);
-                            for (int i = 0; i < all.size(); i++) {
-                                if (timestampFlag == all.get(i).getTimestampFlag()) {
-                                    //修改员工时间
-                                    long staffId = all.get(i).getStaffId();
-                                    List<Staff> staffList = LitePal.where("id=?", String.valueOf(staffId)).find(Staff.class);
-                                    if (staffList.size() > 0) {
-                                        Staff staff = staffList.get(0);
-                                        double hoursOfCurrentMonth = staff.getHoursOfCurrentMonth();
-                                        double workTime = consumeRecord.getWorkTime();
-                                        hoursOfCurrentMonth -= workTime;
-                                        staff.setHoursOfCurrentMonth(hoursOfCurrentMonth);
-                                        if (hoursOfCurrentMonth == 0) {
-                                            staff.setToDefault("hoursOfCurrentMonth");
-                                        }
-                                        staff.update(staffId);
+                            //修改工作员工表的对应时间， 删除工作员工表的数据
+                            List<WorkStaff> workStaffList = LitePal.where("consumeRecordId=?", String.valueOf(consumeRecord.getId())).find(WorkStaff.class);
+                            for (WorkStaff workStaff : workStaffList) {
+                                Staff staff = PersonUtil.getPerson(Staff.class, workStaff.getStaffId());
+                                if (staff != null) {
+                                    double workTime = workStaff.getWorkTime();
+                                    double currentMontTime = staff.getHoursOfCurrentMonth() - workTime;
+                                    staff.setHoursOfCurrentMonth(currentMontTime);
+                                    if (currentMontTime == 0) {
+                                        staff.setToDefault("hoursOfCurrentMonth");
                                     }
-//删除记录
-                                    all.get(i).delete();
+                                    staff.update(staff.getId());
                                 }
+                                workStaff.delete();
                             }
 
 
@@ -467,4 +477,24 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
 
     }
 
+
+    //修改消费记录里的员工姓名
+    private void alterStaffNames(Staff staff) {
+        //根据员工ID查找 到消费记录ID
+        List<WorkStaff> workStaffList = LitePal.where("staffId=?", String.valueOf(staff.getId())).find(WorkStaff.class);
+        for (WorkStaff workStaff : workStaffList) {
+            //获取 每条消费记录的所有员工的姓名
+            List<WorkStaff> list = LitePal.where("consumeRecordId=?", String.valueOf(workStaff.getConsumeRecordId())).find(WorkStaff.class);
+            String staffNames = ConsumeRecordUtil.getStaffNames(list);
+            //到消费记录表修改对应的消费记录
+            List<ConsumeRecord> consumeRecordList = LitePal.where("id=?", String.valueOf(workStaff.getConsumeRecordId())).find(ConsumeRecord.class);
+            for (ConsumeRecord consumeRecord : consumeRecordList) {
+                consumeRecord.setStaffName(staffNames);
+                consumeRecord.update(consumeRecord.getId());
+            }
+
+
+        }
+
+    }
 }

@@ -30,6 +30,7 @@ import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.RechargeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 import com.baima.massagemanager.util.BackupRetuceUtil;
 
 import org.json.JSONException;
@@ -52,7 +53,7 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
     //备份的文件的路径
     private String filePath = new File(Environment.getExternalStorageDirectory(), "BaiMa/MassageManager/db.json").getAbsolutePath();
     private String propertiesPath = new File(Environment.getExternalStorageDirectory(), "BaiMa/MassageManager/dsp.json").getAbsolutePath();
-    private Class<LitePalSupport>[] classes = new Class[]{ConsumeRecord.class, RechargeRecord.class, Customer.class, Staff.class};
+    private Class<LitePalSupport>[] classes = new Class[]{ConsumeRecord.class, RechargeRecord.class, Customer.class, Staff.class, WorkStaff.class};
 
     private int backupOrRetuce;
     private CheckBox cb_timestamp_flag;

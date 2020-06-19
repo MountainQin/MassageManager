@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 import com.baima.massagemanager.util.StringUtil;
 
 import org.litepal.LitePal;
@@ -157,7 +158,7 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
 
     //保存数据
     private void saveData() {
-        String customerName = et_customer_name.getText().toString().trim();
+        String customerName = "普通顾客 " + et_customer_name.getText().toString().trim();
         String remark = et_remark.getText().toString().trim();
 
         ConsumeRecord consumeRecord = new ConsumeRecord();
@@ -167,12 +168,20 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
         consumeRecord.setCustomeName(customerName);
 
         consumeRecord.setStaffId(staff.getId());
-        consumeRecord.setStaffName(staff.getName());
+        consumeRecord.setStaffName(staff.getNumber() + "号 " + staff.getName());
         consumeRecord.setWorkTime(workTime);
         consumeRecord.setCurrentMonthTime(currentMonthTimeLater);
         consumeRecord.setRemark(remark);
         consumeRecord.setTimestampFlag(System.currentTimeMillis());
         consumeRecord.save();
+
+        //保存工作员工表数据
+        WorkStaff workStaff = new WorkStaff();
+        workStaff.setConsumeRecordId(consumeRecord.getId());
+        workStaff.setStaffId(staff.getId());
+        workStaff.setWorkTime(workTime);
+        workStaff.setCurrentMonthTime(currentMonthTimeLater);
+        workStaff.save();
 
         //修改员工本月时间
         staff.setHoursOfCurrentMonth(currentMonthTimeLater);

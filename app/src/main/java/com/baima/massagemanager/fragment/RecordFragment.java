@@ -143,21 +143,11 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
     }
 
 
-    //根据起始时间获取 消费记录，同一次只保存一个
+    //根据起始时间获取 消费记录，
     private List<ConsumeRecord> getConsumeRecordList(long startTimeInMillis, long endTimeInMillis) {
         List<ConsumeRecord> list = LitePal.where("consumeTimestamp >=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
                 .order("id desc").find(ConsumeRecord.class);
-        //同一次记录只保留一个
-        for (int i = 0; i < list.size(); i++) {
-            for (int j = i + 1; j < list.size(); j++) {
-                if (list.get(i).getTimestampFlag() == list.get(j).getTimestampFlag()) {
-                    list.remove(j);
-                    j--;
-                }
-            }
-        }
         return ConsumeRecordUtil.sortConsumeTimestampDesc(list);
-
     }
 
     //时间格式化，年月日

@@ -30,6 +30,8 @@ import android.widget.Toast;
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
 import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
+import com.baima.massagemanager.util.ConsumeRecordUtil;
 import com.baima.massagemanager.util.ScreenUtil;
 import com.baima.massagemanager.util.StringUtil;
 
@@ -46,7 +48,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     private static final int CONSUME_TIME = 2;
     private static final int REMAINDER_LATER = 3;
     private static final int DATE_TIME = 4;
-    private List<ConsumeRecord> consumeRecordList = new ArrayList<>();
+
+    private List<WorkStaff> workStaffList = new ArrayList<>();
     private TextView tv_select_staff;
     private long timeMillis;
     private Calendar calendar;
@@ -117,7 +120,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     //修改标签内容，修改消费记录的员工时间
                     aDouble = Double.valueOf(data.getStringExtra("inputData"));
                     int childId = data.getIntExtra("childId", 0);
-                    consumeRecordList.get(childId).setCurrentMonthTime(aDouble);
+                    workStaffList.get(childId).setCurrentMonthTime(aDouble);
                     LinearLayout layoutStaffChild = (LinearLayout) layout_staff.getChildAt(childId);
                     ((TextView) layoutStaffChild.getChildAt(3)).setText("= " + StringUtil.doubleTrans(aDouble));
                     break;
@@ -191,41 +194,57 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
     //保存数据
     private void saveData() {
+        //如果 消费时间是0返回。
         if (consumeTime <= 0) {
             Toast.makeText(this, "顾客 没有消费，请检查 重试！", Toast.LENGTH_SHORT).show();
             return;
         }
         long timestampFlag = System.currentTimeMillis();
-        //如果 没选择员工,设置员工ID为-1
-        if (consumeRecordList.size() == 0) {
-            ConsumeRecord consumeRecord = new ConsumeRecord();
-            setCustomerData(consumeRecord);
-            consumeRecord.setStaffId(-1);
-            consumeRecord.setStaffName("未选择员工");
-            consumeRecord.setWorkTime(consumeTime);
-            consumeRecord.setTimestampFlag(timestampFlag);
-            consumeRecord.save();
+        String staffNames = "";
+        double workTime = 0;
+
+        if (workStaffList.size() == 0) {
+            //如果 没选择员工,设置员工ID为-1,姓名为未选择
+            staffNames = "未选择员工";
+            workTime = consumeTime;
+
+            //保存员工数据
+            WorkStaff workStaff = new WorkStaff();
+            workStaff.setStaffId(-1);
+            workStaff.setWorkTime(consumeTime);
+            workStaff.setCurrentMonthTime(workTime);
+            workStaffList.add(workStaff);
+        } else {
+            //如果 选择了员工
+            //获取 所有参与的姓名
+            staffNames = ConsumeRecordUtil.getStaffNames(workStaffList);
+            //
+            workTime = consumeTime / workStaffList.size();
         }
-        //如果 选择了员工
-        //获取 所有参与的姓名
-        StringBuffer stringBuffer = new StringBuffer();
-        for (int i = 0; i < consumeRecordList.size(); i++) {
-            ConsumeRecord consumeRecord = consumeRecordList.get(i);
-            if (i == consumeRecordList.size() - 1) {
-                stringBuffer.append(consumeRecord.getStaffName());
-            } else {
-                stringBuffer.append(consumeRecord.getStaffName()).append(",");
-            }
-        }
-        for (ConsumeRecord consumeRecord : consumeRecordList) {
-            setCustomerData(consumeRecord);
-            consumeRecord.setStaffName(stringBuffer.toString());
-            consumeRecord.setTimestampFlag(timestampFlag);
-            consumeRecord.save();
+
+        //保存消费
+        ConsumeRecord consumeRecord = new ConsumeRecord();
+        consumeRecord.setConsumeTimestamp(timeMillis);
+        consumeRecord.setCustomerId(customer.getId());
+        consumeRecord.setConsumeTime(consumeTime);
+        consumeRecord.setRemainder(remainderLater);
+        consumeRecord.setCustomeName(customer.getName());
+
+        consumeRecord.setStaffId(workStaffList.get(0).getStaffId());
+        consumeRecord.setStaffName(staffNames);
+        consumeRecord.setWorkTime(workTime);
+        consumeRecord.setRemark(et_remark.getText().toString());
+        consumeRecord.setTimestampFlag(timestampFlag);
+        consumeRecord.save();
+
+//保存员工数据
+        for (WorkStaff workStaff : workStaffList) {
+            workStaff.setConsumeRecordId(consumeRecord.getId());
+            workStaff.save();
 
             //修改员工本月时间
-            long staffId = consumeRecord.getStaffId();
-            double currentMonthTime = consumeRecord.getCurrentMonthTime();
+            long staffId = workStaff.getStaffId();
+            double currentMonthTime = workStaff.getCurrentMonthTime();
             ContentValues contentValues = new ContentValues();
             contentValues.put("hoursOfCurrentMonth", currentMonthTime);
             LitePal.update(Staff.class, contentValues, staffId);
@@ -245,8 +264,11 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         MainActivity.recordFragment.refreshListData();
 
         Toast.makeText(this, "保存成功！", Toast.LENGTH_SHORT).show();
-        setResult(RESULT_OK,getIntent());
+
+        setResult(RESULT_OK, getIntent());
+
         finish();
+
     }
 
     //显示 选择员工悬浮 窗口
@@ -369,13 +391,11 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         layout_staff.addView(view);
 
         //保存消费记录到集合
-        ConsumeRecord consumeRecord = new ConsumeRecord();
-        consumeRecord.setStaffId(staff.getId());
-        consumeRecord.setStaffName(name);
-        consumeRecord.setWorkTime(workTime);
-        consumeRecord.setCurrentMonthTime(currentMonthTime + workTime);
-        consumeRecordList.add(consumeRecord);
-
+        WorkStaff workStaff = new WorkStaff();
+        workStaff.setStaffId(staff.getId());
+        workStaff.setWorkTime(workTime);
+        workStaff.setCurrentMonthTime(currentMonthTime + workTime);
+        workStaffList.add(workStaff);
         refreshDateTime();
         //刷新 顾客 消费数据
         refreshStaffConsumeData();
@@ -393,7 +413,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                                 //从集合中删除员工
-                                consumeRecordList.remove(layout_staff.indexOfChild(view));
+                                workStaffList.remove(layout_staff.indexOfChild(view));
 
                                 //刷新 顾客 的消费剩余数据
                                 refreshStaffConsumeData();
@@ -429,9 +449,9 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
                         //设置员工顾客 数据
                         int childId = layout_staff.indexOfChild(view);
-                        consumeRecordList.get(childId).setWorkTime(workTime);
+                        workStaffList.get(childId).setWorkTime(workTime);
                         double monthTimeLater = staff.getHoursOfCurrentMonth() + workTime;
-                        consumeRecordList.get(childId).setCurrentMonthTime(monthTimeLater);
+                        workStaffList.get(childId).setCurrentMonthTime(monthTimeLater);
                         tv_work_time.setText("+ " + StringUtil.doubleTrans(workTime) + "小时");
                         tv_month_time_later.setText("= " + StringUtil.doubleTrans(monthTimeLater));
 
@@ -463,8 +483,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     //获取 顾客 的消费数,所有选择的员工的工作加起来
     private double getConsumeTime() {
         double consumeCount = 0;
-        for (ConsumeRecord consumeRecord : consumeRecordList) {
-            consumeCount += consumeRecord.getWorkTime();
+        for (WorkStaff workStaff : workStaffList) {
+            consumeCount += workStaff.getWorkTime();
         }
         return consumeCount;
     }
@@ -482,9 +502,9 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
     //刷新 日期时间，减去员工最大工作的时间
     private void refreshDateTime() {
         double maxWorkTime = 0;
-        for (ConsumeRecord consumeRecord : consumeRecordList) {
-            if (consumeRecord.getWorkTime() > maxWorkTime) {
-                maxWorkTime = consumeRecord.getWorkTime();
+        for (WorkStaff workStaff : workStaffList) {
+            if (workStaff.getWorkTime() > maxWorkTime) {
+                maxWorkTime = workStaff.getWorkTime();
             }
         }
 

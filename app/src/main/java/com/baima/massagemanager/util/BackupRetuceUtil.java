@@ -42,13 +42,17 @@ public class BackupRetuceUtil {
      */
     public static <T extends LitePalSupport> void backup(String path, Class<T>[] classes) throws IOException, FileNotFoundException {
         Map map = new HashMap();
+        //数据 库版本
+        int dbVersion = LitePal.getDatabase().getVersion();
+        map.put("dbVersion",dbVersion);
+
         for (Class<T> aClass : classes) {
             List<T> all = LitePal.findAll(aClass);
             map.put(aClass.getSimpleName(), all);
         }
         String json = new Gson().toJson(map);
 
-        //如果 目录不存在先创建目录
+        //如果 目录不0存在先创建目录
         File folder = new File(path).getParentFile();
         if (!folder.exists()) {
             folder.mkdirs();
