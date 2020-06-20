@@ -7,10 +7,16 @@ import android.util.Log;
 
 import com.baima.massagemanager.entity.ConsumeRecord;
 import com.baima.massagemanager.entity.Customer;
+import com.baima.massagemanager.entity.RechargeRecord;
+import com.baima.massagemanager.entity.Staff;
+import com.baima.massagemanager.entity.WorkStaff;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.litepal.LitePal;
+import org.litepal.crud.LitePalSupport;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,7 +27,14 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
-
+@Test
+public void findAllLitepal(){
+    Class<LitePalSupport>[] classes = new Class[]{ConsumeRecord.class, RechargeRecord.class, Customer.class, Staff.class, WorkStaff.class};
+    for (Class<LitePalSupport> aClass : classes) {
+        List<LitePalSupport> all = LitePal.findAll(aClass);
+        Log.i("baima", aClass.getSimpleName()+all.size());
+    }
+}
     @Test
     public void addRecord(){
         Customer customer = LitePal.where("number=?", "1").find(Customer.class).get(0);

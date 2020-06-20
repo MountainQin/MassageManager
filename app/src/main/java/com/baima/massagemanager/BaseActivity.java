@@ -367,7 +367,7 @@ refreshListData(startTimeInMillis,endTimeInMillis);
     private void refreshTvDate() {
         String s = new Date(startTimeInMillis).toLocaleString();
         String s1 = new Date(endTimeInMillis).toLocaleString();
-        tv_date.setText(s + " - " + s1);
+        tv_date.setText("时间:"+s + " - " + s1);
     }
 
     //刷新基本信息
@@ -393,7 +393,9 @@ refreshListData(startTimeInMillis,endTimeInMillis);
                         //如果 是记录
                         if (o instanceof ConsumeRecord) {
                             ConsumeRecord consumeRecord = (ConsumeRecord) o;
-                            //修改工作员工表的对应时间， 删除工作员工表的数据
+                            consumeRecord.delete();
+
+                            //修改员工表的本月时间， 删除工作员工表的数据
                             List<WorkStaff> workStaffList = LitePal.where("consumeRecordId=?", String.valueOf(consumeRecord.getId())).find(WorkStaff.class);
                             for (WorkStaff workStaff : workStaffList) {
                                 Staff staff = PersonUtil.getPerson(Staff.class, workStaff.getStaffId());

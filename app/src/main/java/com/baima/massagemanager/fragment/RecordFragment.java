@@ -162,7 +162,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
     private void refreshTvDate() {
         String s = datEFormat(startTimeInMillis);
         String s1 = datEFormat(endTimeInMillis);
-        tv_date.setText(s + " - " + s1);
+        tv_date.setText("时间:"+s + " - " + s1);
     }
 
     //初始化数据

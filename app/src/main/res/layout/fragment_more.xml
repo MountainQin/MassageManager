@@ -18,6 +18,11 @@
         android:id="@+id/tv_retuce"
                 android:text="还原"
         style="@style/ViewBaseStyle"/>
+
+<TextView
+    android:id="@+id/tv_help"
+    android:text="帮助"
+    style="@style/ViewBaseStyle"/>
     <TextView
         android:id="@+id/tv_version"
         style="@style/ViewBaseStyle"/>

@@ -59,13 +59,19 @@ public class EditActivity extends AppCompatActivity {
 
     private void editFinish() {
         String data = et.getText().toString();
-        if (!TextUtils.isEmpty(data)) {
-            Intent intent = getIntent();
-            intent.putExtra("inputData", data);
-            setResult(RESULT_OK, intent);
-            finish();
-        } else {
-            Toast.makeText(this, "你输入的内容为空，请重新输入！", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(data)) {
+            //文本型手机号内容可以为空
+            //如果 内容为空，如果 内容不是文本型和手机号，返回，
+            int inputType = et.getInputType();
+            if (inputType != InputType.TYPE_CLASS_TEXT && inputType != InputType.TYPE_CLASS_PHONE) {
+                Toast.makeText(this, "你输入的内容为空，请重新输入！", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
+
+        Intent intent = getIntent();
+        intent.putExtra("inputData", data);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

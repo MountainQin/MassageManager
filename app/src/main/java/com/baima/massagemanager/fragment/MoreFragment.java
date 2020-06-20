@@ -24,6 +24,7 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baima.massagemanager.HelpActivity;
 import com.baima.massagemanager.MainActivity;
 import com.baima.massagemanager.R;
 import com.baima.massagemanager.entity.ConsumeRecord;
@@ -62,6 +63,7 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
     private SharedPreferences defaultSharedPreferences;
     private TextView tv_backup;
     private TextView tv_retuce;
+    private TextView tv_help;
 
     @Nullable
     @Override
@@ -70,12 +72,14 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
         cb_timestamp_flag = view.findViewById(R.id.cb_timestamp_flag);
         tv_backup = view.findViewById(R.id.tv_backup);
         tv_retuce = view.findViewById(R.id.tv_retuce);
+        tv_help = view.findViewById(R.id.tv_help);
         tv_version = view.findViewById(R.id.tv_version);
         tv_about = view.findViewById(R.id.tv_about);
 
         cb_timestamp_flag.setOnCheckedChangeListener(this);
         tv_backup.setOnClickListener(this);
         tv_retuce.setOnClickListener(this);
+        tv_help.setOnClickListener(this);
 
         cb_timestamp_flag.setChecked(MainActivity.isShowTimestampFlag);
 //设置版本信息
@@ -102,6 +106,10 @@ public class MoreFragment extends Fragment implements CompoundButton.OnCheckedCh
             case R.id.tv_retuce:
                 backupOrRetuce = RETUCE;
                 requestPermissionBackupRetuce();
+                break;
+            case R.id.tv_help:
+                Intent intent = new Intent(getActivity(), HelpActivity.class);
+                startActivity(intent);
                 break;
         }
     }
