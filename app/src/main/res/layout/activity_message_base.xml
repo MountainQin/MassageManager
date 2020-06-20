@@ -125,6 +125,7 @@ android:visibility="gone"
             android:id="@+id/tv_date"
             style="@style/ViewBaseStyle"/>
         <TextView
+            android:id="@+id/tv_lrv"
             android:text="记录列表"
             android:focusable="true"
             android:layout_width="match_parent"

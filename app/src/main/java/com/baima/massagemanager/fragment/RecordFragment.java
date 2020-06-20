@@ -1,5 +1,6 @@
 package com.baima.massagemanager.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -43,15 +44,15 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
     private Calendar calendar;
     private long startTimeInMillis;
     private long endTimeInMillis;
-    private int y;
-    private boolean isInitData;
     private LRecyclerViewAdapter lRecyclerViewAdapter;
+    private TextView tv_lrv;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_record, container, false);
         tv_date = view.findViewById(R.id.tv_date);
+        tv_lrv = view.findViewById(R.id.tv_lrv);
         lrv_record = view.findViewById(R.id.lrv_record);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -62,7 +63,11 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
 
         initData();
         consumeRecordList.clear();
-        loadMoreLeast20();
+        //加载7天内数据
+        calendar.add(Calendar.DAY_OF_MONTH, -7);
+        startTimeInMillis = calendar.getTimeInMillis();
+        refreshListData(startTimeInMillis, endTimeInMillis);
+//        loadMoreLeast50();
         refreshTvDate();
 
 
@@ -80,15 +85,8 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
 
     @Override
     public void onLoadMore() {
-        loadMoreLeast20();
-        lrv_record.refreshComplete(0);
-
-        LinearLayoutManager layoutManager = (LinearLayoutManager) lrv_record.getLayoutManager();
-        if (layoutManager.findLastCompletelyVisibleItemPosition() == layoutManager.getItemCount() - 1) {
-            Toast.makeText(getActivity(), "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
+        loadMoreLeast50();
         }
-        refreshTvDate();
-    }
 
     @Override
     public void onClick(View v) {
@@ -111,7 +109,6 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
                     startTimeInMillis = data.getLongExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
                     endTimeInMillis = data.getLongExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
                     refreshListData(startTimeInMillis, endTimeInMillis);
-                    refreshTvDate();
                     break;
             }
         }
@@ -134,11 +131,32 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
 
 
     //根据指定起始时间戳刷新 列表数据
-    private void refreshListData(long startTimeInMillis, long endTimeInMillis) {
-        consumeRecordList.clear();
-        consumeRecordList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
+    private void refreshListData(final long startTimeInMillis, final long endTimeInMillis) {
         if (adapter != null) {
-            adapter.notifyDataSetChanged();
+            consumeRecordList.clear();
+            final ProgressDialog progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setMessage("正在加载，请稍候！");
+            progressDialog.show();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    consumeRecordList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressDialog.dismiss();
+                            adapter.notifyDataSetChanged();
+                            lrv_record.scrollToPosition(0);
+//显示 记录数量
+                            tv_lrv.setText("记录列表 " + consumeRecordList.size());
+                            refreshTvDate();
+
+                        }
+                    });
+
+                }
+            }).start();
         }
     }
 
@@ -162,7 +180,7 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
     private void refreshTvDate() {
         String s = datEFormat(startTimeInMillis);
         String s1 = datEFormat(endTimeInMillis);
-        tv_date.setText("时间:"+s + " - " + s1);
+        tv_date.setText("时间:" + s + " - " + s1);
     }
 
     //初始化数据
@@ -178,18 +196,34 @@ public class RecordFragment extends Fragment implements View.OnClickListener, On
     }
 
     //往前一天加载，至少20
-    private void loadMoreLeast20() {
-        List<ConsumeRecord> list = new ArrayList<>();
-        calendar.setTimeInMillis(startTimeInMillis);
-        while (list.size() < 20) {
-            calendar.add(Calendar.DAY_OF_MONTH, -1);
-            if (calendar.get(Calendar.YEAR) < 2020) {
-                break;
+    private void loadMoreLeast50() {
+        lrv_record.setLoadMoreEnabled(false);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<ConsumeRecord> list = new ArrayList<>();
+                calendar.setTimeInMillis(startTimeInMillis);
+                while (list.size() < 50) {
+                    calendar.add(Calendar.DAY_OF_MONTH, -1);
+                    if (calendar.get(Calendar.YEAR) < 2020) {
+                        break;
+                    }
+                    list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
+                    startTimeInMillis = calendar.getTimeInMillis();
+                }
+                consumeRecordList.addAll(list);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+//显示 记录数量
+                        tv_lrv.setText("记录列表 " + consumeRecordList.size());
+                        refreshTvDate();
+lrv_record.refreshComplete(0);
+lrv_record.setLoadMoreEnabled(true);
+                    }
+                });
             }
-            list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
-            startTimeInMillis = calendar.getTimeInMillis();
-        }
-        consumeRecordList.addAll(list);
-        adapter.notifyDataSetChanged();
+        }).start();
     }
 }

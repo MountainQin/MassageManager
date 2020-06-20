@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -110,26 +111,61 @@ public class CustomerMessageActivity extends BaseActivity<Customer, Object> {
 
     @Override
     //往前一天加载，至少20
-    public void loadMoreLeast20() {
-        List list = new ArrayList<>();
-        calendar.setTimeInMillis(startTimeInMillis);
-        while (list.size() < 20) {
-            calendar.add(Calendar.DAY_OF_MONTH, -1);
-            if (calendar.get(Calendar.YEAR) < 2020) {
-                break;
+    public void loadMoreLeast50() {
+        lrv_staffer_record.setLoadMoreEnabled(false);
+//showProgressDialog();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List list = new ArrayList<>();
+                calendar.setTimeInMillis(startTimeInMillis);
+                while (list.size() < 50) {
+                    calendar.add(Calendar.DAY_OF_MONTH, -1);
+                    if (calendar.get(Calendar.YEAR) < 2020) {
+                        showToast("已经加载到2020年1月1日");
+                        break;
+                    }
+                    list.addAll(getConsumeRechargeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
+                    startTimeInMillis = calendar.getTimeInMillis();
+                }
+                dataList.addAll(list);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lRecyclerViewAdapter.notifyDataSetChanged();
+                        refreshTvDate();
+//显示 记录数量
+                        tv_lrv.setText("记录列表 " + dataList.size());
+                        closeProgressDialog();
+                        lrv_staffer_record.refreshComplete(0);
+                        lrv_staffer_record.setLoadMoreEnabled(true);
+                    }
+                });
             }
-            list.addAll(getConsumeRechargeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
-            startTimeInMillis = calendar.getTimeInMillis();
-        }
-        dataList.addAll(list);
-        lRecyclerViewAdapter.notifyDataSetChanged();
+        }).start();
     }
 
     @Override
-    public void refreshListData(long startTimeInMillis, long endTimeInMillis) {
+    public void refreshListData(final long startTimeInMillis, final long endTimeInMillis) {
         dataList.clear();
-        dataList.addAll(getConsumeRechargeRecordList(startTimeInMillis, endTimeInMillis));
-        lRecyclerViewAdapter.notifyDataSetChanged();
+        showProgressDialog();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dataList.addAll(getConsumeRechargeRecordList(startTimeInMillis, endTimeInMillis));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lRecyclerViewAdapter.notifyDataSetChanged();
+lrv_staffer_record.scrollToPosition(0);
+                        refreshTvDate();
+//显示 记录数量
+                        tv_lrv.setText("记录列表 " + dataList.size());
+                        closeProgressDialog();
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override

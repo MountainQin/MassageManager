@@ -12,6 +12,7 @@ public class WorkStaff extends LitePalSupport {
 private long staffId;
 private double workTime;
 private double currentMonthTime;
+private long consumeTimestamp;
 
     public long getId() {
         return id;
@@ -51,6 +52,14 @@ private double currentMonthTime;
 
     public void setCurrentMonthTime(double currentMonthTime) {
         this.currentMonthTime = currentMonthTime;
+    }
+
+    public long getConsumeTimestamp() {
+        return consumeTimestamp;
+    }
+
+    public void setConsumeTimestamp(long consumeTimestamp) {
+        this.consumeTimestamp = consumeTimestamp;
     }
 
     @Override

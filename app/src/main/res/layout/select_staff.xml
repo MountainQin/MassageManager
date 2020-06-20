@@ -34,7 +34,7 @@
         android:id="@+id/lv_staff"
         android:layout_margin="5dp"
         android:layout_below="@+id/tv_title"
-        android:layout_above="@+id/tv_other_staff"
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></ListView>
 

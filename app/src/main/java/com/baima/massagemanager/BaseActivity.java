@@ -2,6 +2,7 @@ package com.baima.massagemanager;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -77,12 +78,15 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
     public long endTimeInMillis;
     public T t;
     public List<E> dataList = new ArrayList<>();
+    private ProgressDialog progressDialog;
+    public TextView tv_lrv;
+    public long startTime;
 
     public abstract List<T> getTList(long personId);
 
     public abstract RecyclerView.Adapter getAdapter(List<E> dataList);
 
-    public abstract void loadMoreLeast20();
+    public abstract void loadMoreLeast50();
 
     public abstract void refreshListData(long startTimeInMillis, long endTimeInMillis);
 
@@ -97,15 +101,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
 
     @Override
     public void onLoadMore() {
-        loadMoreLeast20();
-        lrv_staffer_record.refreshComplete(0);
-
-        LinearLayoutManager layoutManager = (LinearLayoutManager) lrv_staffer_record.getLayoutManager();
-        if (layoutManager.findLastCompletelyVisibleItemPosition() == layoutManager.getItemCount() - 1) {
-            Toast.makeText(this, "已经加载到2020年1月1日！", Toast.LENGTH_SHORT).show();
-        }
-
-        refreshTvDate();
+        loadMoreLeast50();
     }
 
     @Override
@@ -194,7 +190,6 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                 case PICK_DATE:
                     startTimeInMillis = data.getLongExtra(PickDateActivity.START_TIME_IN_MILLIS, startTimeInMillis);
                     endTimeInMillis = data.getLongExtra(PickDateActivity.END_TIME_IN_MILLIS, endTimeInMillis);
-                    refreshTvDate();
                     break;
 
                 case ALTER_NUMBER:
@@ -210,7 +205,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                     if (t instanceof Staff) {
                         alterStaffNames((Staff) t);
                         //刷新 员工和记录列表
-                        refreshListData(startTimeInMillis,endTimeInMillis);
+                        refreshListData(startTimeInMillis, endTimeInMillis);
                         MainActivity.staffFragment.refreshListData();
                         MainActivity.recordFragment.refreshListData();
                     }
@@ -230,7 +225,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                         //如果 是员工修改消费记录里的员工姓名
                         alterStaffNames((Staff) t);
                         //刷新 员工和记录列表
-refreshListData(startTimeInMillis,endTimeInMillis);
+                        refreshListData(startTimeInMillis, endTimeInMillis);
                         MainActivity.staffFragment.refreshListData();
                         MainActivity.recordFragment.refreshListData();
                     }
@@ -281,6 +276,7 @@ refreshListData(startTimeInMillis,endTimeInMillis);
         tv_sms = findViewById(R.id.tv_sms);
         tv_remark = findViewById(R.id.tv_remark);
         tv_date = findViewById(R.id.tv_date);
+        tv_lrv = findViewById(R.id.tv_lrv);
         lrv_staffer_record = findViewById(R.id.lrv_customer_record);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -320,8 +316,12 @@ refreshListData(startTimeInMillis,endTimeInMillis);
         refreshBaseMessage();
 
         initDate();
-        loadMoreLeast20();
-        refreshTvDate();
+        //加载7天内的数据
+        startTime = System.currentTimeMillis() ;
+        calendar.add(Calendar.DAY_OF_MONTH, -7);
+        startTimeInMillis = calendar.getTimeInMillis();
+        refreshListData(startTimeInMillis,endTimeInMillis);
+
     }
 
     //删除顾客 或者员工的对话框
@@ -356,19 +356,19 @@ refreshListData(startTimeInMillis,endTimeInMillis);
         calendar = Calendar.getInstance();
         //小时分钟秒毫秒清零
         CalendarUtil.setTimeTo0(calendar);
-//           startTimeInMillis = calendar.getTimeInMillis();
 //往后一天
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         startTimeInMillis = calendar.getTimeInMillis();
         endTimeInMillis = calendar.getTimeInMillis();
+
     }
 
     //刷新 日期标签
-    private void refreshTvDate() {
+    public void refreshTvDate() {
         String s = new Date(startTimeInMillis).toLocaleString();
         String s1 = new Date(endTimeInMillis).toLocaleString();
-        tv_date.setText("时间:"+s + " - " + s1);
-    }
+        tv_date.setText("时间:" + s + " - " + s1);
+        }
 
     //刷新基本信息
     public void refreshBaseMessage() {
@@ -498,5 +498,31 @@ refreshListData(startTimeInMillis,endTimeInMillis);
 
         }
 
+    }
+
+    public void showProgressDialog() {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setTitle("正在加载");
+                        progressDialog.setMessage("正在加载，请稍候！");
+        }
+        progressDialog.show();
+        }
+
+    public void closeProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+    }
+
+
+    public void showToast(final String text){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BaseActivity.this, text, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

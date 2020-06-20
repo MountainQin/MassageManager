@@ -51,7 +51,7 @@ public class CustomerRecordAdapter extends RecyclerView.Adapter {
     }
 
     //对应消费记录
-    class ConsumeRecordViewHolder extends RecyclerView.ViewHolder {
+    static class ConsumeRecordViewHolder extends RecyclerView.ViewHolder {
         View view;
         TextView tv_time;
         TextView tv_consume_time;

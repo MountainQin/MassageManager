@@ -3,6 +3,7 @@ package com.baima.massagemanager;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -96,42 +97,90 @@ public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
     }
 
     @Override
-    public void loadMoreLeast20() {
-        List list = new ArrayList<>();
-        calendar.setTimeInMillis(startTimeInMillis);
-        while (list.size() < 20) {
-            calendar.add(Calendar.DAY_OF_MONTH, -1);
-            if (calendar.get(Calendar.YEAR) < 2020) {
-                break;
+    public void loadMoreLeast50() {
+        lrv_staffer_record.setLoadMoreEnabled(false);
+//showProgressDialog();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List list = new ArrayList<>();
+                calendar.setTimeInMillis(startTimeInMillis);
+                while (list.size() < 50) {
+                    calendar.add(Calendar.DAY_OF_MONTH, -1);
+                    if (calendar.get(Calendar.YEAR) < 2020) {
+                        showToast("已经加载到2020年1月1日");
+                        break;
+                    }
+                                        list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
+                    startTimeInMillis = calendar.getTimeInMillis();
+                }
+                dataList.addAll(list);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //显示 记录数量
+                        tv_lrv.setText("记录列表 " + dataList.size());
+                        lRecyclerViewAdapter.notifyDataSetChanged();
+                        refreshTvDate();
+                        closeProgressDialog();
+                        lrv_staffer_record.refreshComplete(0);
+                        lrv_staffer_record.setLoadMoreEnabled(true);
+                    }
+                });
             }
-            list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
-            startTimeInMillis = calendar.getTimeInMillis();
-        }
-        dataList.addAll(list);
-        lRecyclerViewAdapter.notifyDataSetChanged();
+        }).start();
 
     }
 
     @Override
-    public void refreshListData(long startTimeInMillis, long endTimeInMillis) {
+    public void refreshListData(final long startTimeInMillis, final long endTimeInMillis) {
         dataList.clear();
-        dataList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
-        lRecyclerViewAdapter.notifyDataSetChanged();
+        showProgressDialog();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dataList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
+                runOnUiThread(new Runnable() {
+                                        @Override
+                    public void run() {
+                        lRecyclerViewAdapter.notifyDataSetChanged();
+lrv_staffer_record.scrollToPosition(0);
+                        refreshTvDate();
+//显示 记录数量
+                        tv_lrv.setText("记录列表 " + dataList.size());
+                        closeProgressDialog();
+                    }
+                });
+            }
+        }).start();
     }
 
     //获取指定起始时间的消费记录
     private List<ConsumeRecord> getConsumeRecordList(long startTimeInMillis, long endTimeInMillis) {
         List<ConsumeRecord> consumeRecordList = new ArrayList<>();
-        List<ConsumeRecord> list = LitePal.where("consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
-                .order("id desc").find(ConsumeRecord.class);
-        //判断 每条记录，如果工作员工有这个员工就添加到集合
-        for (int i = 0; i < list.size(); i++) {
-            ConsumeRecord consumeRecord = list.get(i);
-            List<WorkStaff> workStaffList = LitePal.where("consumeRecordId=? and staffId=?", String.valueOf(consumeRecord.getId()), String.valueOf(t.getId())).find(WorkStaff.class);
-if (workStaffList.size()>0){
-    consumeRecordList.add(consumeRecord);
-}
+        long staffId = t.getId();
+        List<WorkStaff> list = LitePal.where("staffId=? and consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(staffId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(WorkStaff.class);
+        //根据工作员工记录里的消费记录ID查找 消费记录
+        for (WorkStaff workStaff : list) {
+            ConsumeRecord consumeRecord = LitePal.find(ConsumeRecord.class, workStaff.getConsumeRecordId());
+            if (consumeRecord!=null){
+                consumeRecordList.add(consumeRecord);
+            }
         }
+        return ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList);
+    }
+    private List<ConsumeRecord> getConsumeRecordList1(long startTimeInMillis, long endTimeInMillis) {
+        List<ConsumeRecord> consumeRecordList = new ArrayList<>();
+        long staffId = t.getId();
+        List<WorkStaff> list = LitePal.where("staffId=? and consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(staffId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
+                .order("id desc").find(WorkStaff.class);
+        //根据工作员工记录里的消费记录ID查找 消费记录
+        long[] ids=new long[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+ids[i]=list.get(i).getConsumeRecordId();
+        }
+        consumeRecordList=LitePal.findAll(ConsumeRecord.class, ids);
         return ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList);
     }
 
