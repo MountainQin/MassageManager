@@ -317,10 +317,10 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
 
         initDate();
         //加载7天内的数据
-        startTime = System.currentTimeMillis() ;
+        startTime = System.currentTimeMillis();
         calendar.add(Calendar.DAY_OF_MONTH, -7);
         startTimeInMillis = calendar.getTimeInMillis();
-        refreshListData(startTimeInMillis,endTimeInMillis);
+        refreshListData(startTimeInMillis, endTimeInMillis);
 
     }
 
@@ -368,7 +368,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
         String s = new Date(startTimeInMillis).toLocaleString();
         String s1 = new Date(endTimeInMillis).toLocaleString();
         tv_date.setText("时间:" + s + " - " + s1);
-        }
+    }
 
     //刷新基本信息
     public void refreshBaseMessage() {
@@ -465,6 +465,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
                             adapter.notifyDataSetChanged();
 
                         }
+                        tv_lrv.setText("记录列表 " + dataList.size());
                     }
                 })
                 .show();
@@ -505,10 +506,10 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
             progressDialog = new ProgressDialog(this);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setTitle("正在加载");
-                        progressDialog.setMessage("正在加载，请稍候！");
+            progressDialog.setMessage("正在加载，请稍候！");
         }
         progressDialog.show();
-        }
+    }
 
     public void closeProgressDialog() {
         if (progressDialog != null) {
@@ -517,7 +518,7 @@ public abstract class BaseActivity<T extends Person, E> extends AppCompatActivit
     }
 
 
-    public void showToast(final String text){
+    public void showToast(final String text) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

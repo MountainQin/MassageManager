@@ -51,7 +51,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
     private List<WorkStaff> workStaffList = new ArrayList<>();
     private TextView tv_select_staff;
-    private long timeMillis;
+    private long consumeTimestamp;
     private Calendar calendar;
     private Customer customer;
     private LinearLayout layout_staff;
@@ -104,7 +104,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.tv_date_time:
                 Intent intent2 = new Intent(this, PickDateTimeActivity.class);
-                intent2.putExtra("timeInMillis", timeMillis);
+                intent2.putExtra("timeInMillis", consumeTimestamp);
                 startActivityForResult(intent2, DATE_TIME);
                 break;
         }
@@ -131,9 +131,9 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     remainderLater = customer.getRemainder() - consumeTime;
                     tv_remainder_later.setText("= " + StringUtil.doubleTrans(remainderLater));
 
-                    timeMillis = (long) (startTimeMillis - consumeTime * 1000 * 60 * 60);
-                    timeMillis = timeMillis / 1000 / 60 * 1000 * 60;
-                    tv_date_time.setText(new Date(timeMillis).toLocaleString());
+                    consumeTimestamp = (long) (startTimeMillis - consumeTime * 1000 * 60 * 60);
+                    consumeTimestamp = consumeTimestamp / 1000 / 60 * 1000 * 60;
+                    tv_date_time.setText(new Date(consumeTimestamp).toLocaleString());
                     break;
                 case REMAINDER_LATER:
                     aDouble = Double.valueOf(data.getStringExtra("inputData"));
@@ -141,8 +141,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
                     remainderLater = aDouble;
                     break;
                 case DATE_TIME:
-                    timeMillis = data.getLongExtra("timeInMillis", timeMillis);
-                    tv_date_time.setText(new Date(timeMillis).toLocaleString());
+                    consumeTimestamp = data.getLongExtra("timeInMillis", consumeTimestamp);
+                    tv_date_time.setText(new Date(consumeTimestamp).toLocaleString());
                     break;
             }
         }
@@ -181,8 +181,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         calendar.set(Calendar.MILLISECOND, 0);
 
         startTimeMillis = calendar.getTimeInMillis();
-        timeMillis = calendar.getTimeInMillis();
-        tv_date_time.setText(new Date(timeMillis).toLocaleString());
+        consumeTimestamp = calendar.getTimeInMillis();
+        tv_date_time.setText(new Date(consumeTimestamp).toLocaleString());
 
 
         tv_select_staff.setOnClickListener(this);
@@ -213,6 +213,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
             workStaff.setStaffId(-1);
             workStaff.setWorkTime(consumeTime);
             workStaff.setCurrentMonthTime(workTime);
+            workStaff.setConsumeTimestamp(consumeTimestamp);
             workStaffList.add(workStaff);
         } else {
             //如果 选择了员工
@@ -224,7 +225,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
         //保存消费
         ConsumeRecord consumeRecord = new ConsumeRecord();
-        consumeRecord.setConsumeTimestamp(timeMillis);
+        consumeRecord.setConsumeTimestamp(consumeTimestamp);
         consumeRecord.setCustomerId(customer.getId());
         consumeRecord.setConsumeTime(consumeTime);
         consumeRecord.setRemainder(remainderLater);
@@ -240,6 +241,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 //保存员工数据
         for (WorkStaff workStaff : workStaffList) {
             workStaff.setConsumeRecordId(consumeRecord.getId());
+            workStaff.setConsumeTimestamp(consumeTimestamp);
             workStaff.save();
 
             //修改员工本月时间
@@ -390,7 +392,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
         layout_staff.addView(view);
 
-        //保存消费记录到集合
+//保存工作员工到集合
         WorkStaff workStaff = new WorkStaff();
         workStaff.setStaffId(staff.getId());
         workStaff.setWorkTime(workTime);
@@ -509,8 +511,8 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         long workMillis = (long) (maxWorkTime * 1000 * 60 * 60);
-        timeMillis = startTimeMillis - workMillis;
-        tv_date_time.setText(new Date(timeMillis).toLocaleString());
+        consumeTimestamp = startTimeMillis - workMillis;
+        tv_date_time.setText(new Date(consumeTimestamp).toLocaleString());
     }
 
 
@@ -530,7 +532,7 @@ public class ConsumeActivity extends AppCompatActivity implements View.OnClickLi
 
     //设置顾客 数据
     private void setCustomerData(ConsumeRecord consumeRecord) {
-        consumeRecord.setConsumeTimestamp(timeMillis);
+        consumeRecord.setConsumeTimestamp(consumeTimestamp);
         consumeRecord.setCustomerId(customer.getId());
         consumeRecord.setConsumeTime(consumeTime);
         consumeRecord.setRemainder(remainderLater);

@@ -181,6 +181,7 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
         workStaff.setStaffId(staff.getId());
         workStaff.setWorkTime(workTime);
         workStaff.setCurrentMonthTime(currentMonthTimeLater);
+        workStaff.setConsumeTimestamp(timeInMillis);
         workStaff.save();
 
         //修改员工本月时间

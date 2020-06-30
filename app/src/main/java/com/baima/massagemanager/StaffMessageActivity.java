@@ -20,7 +20,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
-
+    private static final String TAG = "baima";
     private TextView tv_record;
     private TextView tv_current_month_time;
 
@@ -111,7 +111,7 @@ public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
                         showToast("已经加载到2020年1月1日");
                         break;
                     }
-                                        list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
+                    list.addAll(getConsumeRecordList(calendar.getTimeInMillis(), startTimeInMillis));
                     startTimeInMillis = calendar.getTimeInMillis();
                 }
                 dataList.addAll(list);
@@ -141,10 +141,10 @@ public class StaffMessageActivity extends BaseActivity<Staff, ConsumeRecord> {
             public void run() {
                 dataList.addAll(getConsumeRecordList(startTimeInMillis, endTimeInMillis));
                 runOnUiThread(new Runnable() {
-                                        @Override
+                    @Override
                     public void run() {
                         lRecyclerViewAdapter.notifyDataSetChanged();
-lrv_staffer_record.scrollToPosition(0);
+                        lrv_staffer_record.scrollToPosition(0);
                         refreshTvDate();
 //显示 记录数量
                         tv_lrv.setText("记录列表 " + dataList.size());
@@ -159,28 +159,35 @@ lrv_staffer_record.scrollToPosition(0);
     private List<ConsumeRecord> getConsumeRecordList(long startTimeInMillis, long endTimeInMillis) {
         List<ConsumeRecord> consumeRecordList = new ArrayList<>();
         long staffId = t.getId();
+        List<WorkStaff> all = LitePal.findAll(WorkStaff.class);
+        for (WorkStaff workStaff : all) {
+            Log.i(TAG, "getConsumeRecordList: "+workStaff.toString());
+            Log.i(TAG, "getConsumeRecordList: "+workStaff.getConsumeTimestamp());
+        }
         List<WorkStaff> list = LitePal.where("staffId=? and consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(staffId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
                 .order("id desc").find(WorkStaff.class);
+        Log.i(TAG, "getConsumeRecordList: work staffs size "+list.size());
         //根据工作员工记录里的消费记录ID查找 消费记录
         for (WorkStaff workStaff : list) {
             ConsumeRecord consumeRecord = LitePal.find(ConsumeRecord.class, workStaff.getConsumeRecordId());
-            if (consumeRecord!=null){
+            if (consumeRecord != null) {
                 consumeRecordList.add(consumeRecord);
             }
         }
         return ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList);
     }
+
     private List<ConsumeRecord> getConsumeRecordList1(long startTimeInMillis, long endTimeInMillis) {
         List<ConsumeRecord> consumeRecordList = new ArrayList<>();
         long staffId = t.getId();
         List<WorkStaff> list = LitePal.where("staffId=? and consumeTimestamp>=? and consumeTimestamp<?", String.valueOf(staffId), String.valueOf(startTimeInMillis), String.valueOf(endTimeInMillis))
                 .order("id desc").find(WorkStaff.class);
         //根据工作员工记录里的消费记录ID查找 消费记录
-        long[] ids=new long[list.size()];
+        long[] ids = new long[list.size()];
         for (int i = 0; i < list.size(); i++) {
-ids[i]=list.get(i).getConsumeRecordId();
+            ids[i] = list.get(i).getConsumeRecordId();
         }
-        consumeRecordList=LitePal.findAll(ConsumeRecord.class, ids);
+        consumeRecordList = LitePal.findAll(ConsumeRecord.class, ids);
         return ConsumeRecordUtil.sortConsumeTimestampDesc(consumeRecordList);
     }
 
